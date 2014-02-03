@@ -68,7 +68,7 @@ clean-js:
 ### NPM ########################################################################
 module: test coverage docs
 	mkdir -p $(MODULE_DIR)
-	cp README.* $(MODULE_DIR)
+	cp README.md $(MODULE_DIR)
 	cp LICENSE $(MODULE_DIR)
 	cp -r lib $(MODULE_DIR)
 	cp -r test $(MODULE_DIR)
