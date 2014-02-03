@@ -249,5 +249,3 @@ when evaluated.
 ***NOTE*** The precise rules by which `@titlecase` modifies the case of the input text is subject to change in future releases. Eventually we'll settle on a specific contract, but we're not ready to do that yet.
 
 Also see the `@upcase` and `@downcase` helpers.
-
-## Other Methods
