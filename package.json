@@ -1,0 +1,29 @@
+{
+  "name":         "common-dustjs-helpers",
+  "description":  "A small library of \"standard\" Dust.js helper functions.",
+  "version":      "0.0.1",
+  "keywords":     [ "dust", "dust.js", "linkedin", "helper", "web", "template" ],
+  "license":      "MIT",
+  "author":       "Rod Waldhoff <the-letter-r-followed-by-my-last-name@gmail.com> http://heyrod.com/",
+  "contributors": [ ],
+  "repository":   { "type":"git", "url":"https://github.com/rodw/common-dustjs-helpers" },
+  "homepage":     "https://github.com/rodw/common-dustjs-helpers",
+  "bugs":         { "url":"http://github.com/rodw/common-dustjs-helpers/issues" },
+  "main":         "lib/index.js",
+  "scripts":      { "test": "make test" },
+  "directories":  { "lib":"lib", "doc":"docs" },
+  "devDependencies" : {
+    "coffee-script"   : "latest",
+    "docco"           : "latest",
+    "dustjs-linkedin" : "latest",
+    "expresso"        : "latest",
+    "jscoverage"      : "latest",
+    "marked"          : "latest",
+    "mocha"           : "latest",
+    "should"          : "latest"
+
+  },
+  "engines": {
+    "node":       ">= 0.10.3"
+  }
+}
