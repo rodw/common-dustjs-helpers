@@ -97,6 +97,36 @@ when evaluated.
 
 Also see the `@odd`, `@first` and  `@last` helpers.
 
+### `@odd`
+
+The "odd" helper will execute its body if the current element has an odd-valued (zero-based) index, and its `else` body (if any) otherwise.
+
+For example, given the context:
+
+    { mylist: [0,1,2,3,4] }
+
+The Dust.js snippet:
+
+    {#mylist}
+      {@odd}
+        {.} is odd.{~n}
+      {:else}
+        {.} is not odd.{~n}
+      {/odd}
+    {/mylist}
+
+will resolve to:
+
+    0 is not odd.
+    1 is odd.
+    2 is not odd.
+    3 is odd.
+    4 is not odd.
+
+when evaluated.
+
+Also see the `@even`, `@first` and  `@last` helpers.
+
 ### `@filter`
 
 Dust.js includes several "filters" that convert the content of a context variable before emitting it.  For example, the snippet:
@@ -149,33 +179,33 @@ Also see the `@last`, `@even` and  `@odd` helpers.
 
 ### `@last`
 
-The "last" helper will execute its body if the current element has an odd-valued (zero-based) index, and its `else` body (if any) otherwise.
+The "last" helper will execute its body if the current element is the last element of a list, and its `else` body (if any) otherwise.
 
 For example, given the context:
 
-    { mylist: [0,1,2,3,4] }
+    { mylist: [1,2,3,4,5] }
 
 The Dust.js snippet:
 
     {#mylist}
-      {@odd}
-        {.} is odd.{~n}
+      {@last}
+        {.} is the last value.{~n}
       {:else}
-        {.} is not odd.{~n}
-      {/odd}
+        {.} is not the last value.{~n}
+      {/first}
     {/mylist}
 
 will resolve to:
 
-    0 is not odd.
-    1 is odd.
-    2 is not odd.
-    3 is odd.
-    4 is not odd.
+    1 is not the last value.
+    2 is not the last value.
+    3 is not the last value.
+    4 is not the last value.
+    5 is the last value.
 
 when evaluated.
 
-Also see the `@even`, `@first` and  `@last` helpers.
+Also see the `@even`, `@first` and  `@odd` helpers.
 
 ### `@repeat`
 
