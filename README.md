@@ -21,7 +21,7 @@ to the `dependencies` section of your `package.json` file.
 To register the common helper functions with your Dust.js instance, require the module and then invoke the `export_helpers_to` method.  For example:
 
 
-    var helpers = new require("common-dustjs-helpers").CommonDustjsHelpers();
+    var helpers = new require("common-dustjs-helpers").CommonDustjsHelpers;
     var dust = require("dustjs"); // or "dustjs-linkedin"
     helpers.export_helpers_to(dust);
 
