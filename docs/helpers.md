@@ -140,7 +140,37 @@ Also see the `@sep` helper.
 
 ## `@last`
 
-The "last" helper will execute its body if the current element has an odd-valued (zero-based) index, and its `else` body (if any) otherwise.
+The "last" helper will execute its body if the current element is the last element of a list, and its `else` body (if any) otherwise.
+
+For example, given the context:
+
+    { mylist: [1,2,3,4,5] }
+
+The Dust.js snippet:
+
+    {#mylist}
+      {@last}
+        {.} is the last value.{~n}
+      {:else}
+        {.} is not the last value.{~n}
+      {/last}
+    {/mylist}
+
+will resolve to:
+
+    1 is not the last value.
+    2 is not the last value.
+    3 is not the last value.
+    4 is not the last value.
+    5 is the last value.
+
+when evaluated.
+
+Also see the `@last`, `@even` and  `@odd` helpers.
+
+## `@odd`
+
+The "odd" helper will execute its body if the current element has an odd-valued (zero-based) index, and its `else` body (if any) otherwise.
 
 For example, given the context:
 
