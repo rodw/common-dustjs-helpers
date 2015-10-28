@@ -4,6 +4,10 @@
 
 `common-dustjs-helpers` is an [npm](https://npmjs.org/) module that offers a small library of helper functions for the [Dust.js](http://akdubya.github.io/dustjs/) web-templating framework (and the [LinkedIn fork of Dust.js](https://github.com/linkedin/dustjs)).  This library is largely complementary to [LinkedIn's dustjs-helpers](https://github.com/linkedin/dustjs-helpers) library.
 
+The philosophy behind `common-dustjs-helpers` is the same as that behind dust.js itself--namely that templates should contain presentation-level logic, free from side effects (and hence composable and capable of running in parellel).  In particular, you will not find helper functions that allow you to execute arbitrary JavaScript.
+
+NOTE: This repository follows the [git flow](https://github.com/nvie/gitflow) branching model.  The latest stable (released) version of the code should be found in the `master` branch.  (Individual releases will be tagged in that branch.) The latest unstable (un-released) version of the code should be found in the `develop` branch.  
+
 ## Installing
 
 `common-dustjs-helpers` is packaged as an npm module under the name [common-dustjs-helpers](https://npmjs.org/package/common-dustjs-helpers).  To install the library, run:
