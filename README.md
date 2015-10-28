@@ -33,223 +33,32 @@ and then use the Dust.js instance (`dust`) as you normally would.
 
 ## The Helpers
 
-### `@count`
+ * **@count** - emits the size of an array or similiar container (e.g., `{@count of=foo/}`).
+ 
+ * **@downcase** - converts text to lower case (e.g., `{@downcase}Foo{/downcase}`).
+ 
+ * **@even** - executes only for even-valued (zero-based) indexes (e.g., `{#foo}{@even}{.} is even.{:else}{.} is odd.{/even}{/foo}`).
 
-The "count" helper emits the size (length) of the list (array) in the context variable specified by the `of` parameter.
+ * **@filter** - applies a strandard dust `|x` filter to the tag body (e.g., `{@filter type="uc"}Foo {bar} xyzzy.{/filter}`).
 
-For example, given the context:
+ * **@first** - executes only for the first element in a list (e.g., `{#foo}{@first}{.} is first.{:else}{.} is not first.{/first}{/foo}`).
 
-    { foo: [ 1, 'a', 'xyzzy' ] }
+ * **@idx** - restores the original dust.js `idx` helper (e.g., `{#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}`)
 
-The Dust.js snippet:
+ * **@if** - conditionally executes the body (e.g., `{@if value=foo is="Bar"}Foo === "Bar"{:else}Foo !== "Bar"{/if}`).
 
-    {@count of=foo/}
+ * **@last** - executes only for the last element in a list (e.g., `{#foo}{@last}{.} is last.{:else}{.} is not last.{/last}{/foo}`).
 
-will resolve to:
+ * **@odd** - executes only for odd-valued (zero-based) indexes (e.g., `{#foo}{@odd}{.} is odd.{:else}{.} is even.{/odd}{/foo}`)
 
-    3
+ * **@repeat** - repeat N times (e.g., `{@repeat times="3"}Well{@sep}, {/sep}{/repeat}`).
+ 
+ * **@sep** - restores the original dust.js `sep` helper (e.g., `{#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}`)
 
-when evaluated.
+ * **@titlecase** - converts text to title case (e.g., `{@titlecase}Foo{/titlecase}`)
+ 
+ * **@unless** - conditionally executes the body (e.g., `{@unless value=foo is="Bar"}Foo !== "Bar"{:else}Foo === "Bar"{/unless}`).
+ 
+ * **@upcase** - converts text to upper case (e.g., `{@upcase}Foo{/upcase}`)
 
-### `@downcase`
-
-The "downcase" helper will convert the tag body to lower case before emitting it.  Any Dust.js tags within the body will be evaluated as they normally would.
-
-For example, given the context:
-
-    { foo: 'Hello World!' }
-
-The Dust.js snippet:
-
-    {@downcase}The message is "{foo}".{/downcase}
-
-will resolve to:
-
-    the message is "hello world!".
-
-when evaluated.
-
-Also see the `@upcase` and `@titlecase` helpers.
-
-### `@even`
-
-The "even" helper will execute its body if the current element has an even-valued (zero-based) index, and its `else` body (if any) otherwise.
-
-For example, given the context:
-
-    { mylist: [0,1,2,3,4] }
-
-The Dust.js snippet:
-
-    {#mylist}
-      {@even}
-        {.} is even.{~n}
-      {:else}
-        {.} is not even.{~n}
-      {/even}
-    {/mylist}
-
-will resolve to:
-
-    0 is even.
-    1 is not even.
-    2 is even.
-    3 is not even.
-    4 is even.
-
-when evaluated.
-
-Also see the `@odd`, `@first` and  `@last` helpers.
-
-### `@filter`
-
-Dust.js includes several "filters" that convert the content of a context variable before emitting it.  For example, the snippet:
-
-    {foo|uc}
-
-will escape the value of the context variable `foo` using JavaScript's `encodeURIComponent` function.
-
-The "filter" helper makes it possible to apply a filter to arbitrary text (not just the value of a variable).
-
-For example, the snippet:
-
-    {@filter type="uc"}{foo}{/filter}
-
-is equivalent to `{foo|uc}`, and:
-
-    {@filter type="uc"}Some text before. {foo} Some text after.{/filter}
-
-will apply the filter to *all* of the text within the body of the `@filter` tag, not just the value of `foo`.
-
-### `@first`
-
-The "first" helper will execute its body if the current element is the first element of a list, and its `else` body (if any) otherwise.
-
-For example, given the context:
-
-    { mylist: [1,2,3,4,5] }
-
-The Dust.js snippet:
-
-    {#mylist}
-      {@first}
-        {.} is the first value.{~n}
-      {:else}
-        {.} is not the first value.{~n}
-      {/first}
-    {/mylist}
-
-will resolve to:
-
-    1 is the first value.
-    2 is not the first value.
-    3 is not the first value.
-    4 is not the first value.
-    5 is not the first value.
-
-when evaluated.
-
-Also see the `@last`, `@even` and  `@odd` helpers.
-
-### `@last`
-
-The "last" helper will execute its body if the current element has an odd-valued (zero-based) index, and its `else` body (if any) otherwise.
-
-For example, given the context:
-
-    { mylist: [0,1,2,3,4] }
-
-The Dust.js snippet:
-
-    {#mylist}
-      {@odd}
-        {.} is odd.{~n}
-      {:else}
-        {.} is not odd.{~n}
-      {/odd}
-    {/mylist}
-
-will resolve to:
-
-    0 is not odd.
-    1 is odd.
-    2 is not odd.
-    3 is odd.
-    4 is not odd.
-
-when evaluated.
-
-Also see the `@even`, `@first` and  `@last` helpers.
-
-### `@repeat`
-
-The "repeat" helper will execute its body `times` times (as if a list of `times` bodies were passed to a section block.
-
-For example the Dust.js snippet:
-
-    {@repeat times="3"}
-       Well{@sep}, {/sep}
-    {/repeat}
-
-will resolve to:
-
-    Well, Well, Well
-
-when evaluated.
-
-Each time the zero-based numeric index is passed as the `{.}` context.  E.g., the Dust.js snippet:
-
-    {@repeat times="4"}
-       {.}
-       {@sep}, {/sep}
-    {/repeat}
-
-will resolve to:
-
-    0,1,2,3
-
-Note that the `times` parameter can be a context variable or literal numeric string.
-
-### `@upcase`
-
-The "upcase" helper will convert the tag body to upper case before emitting it.  Any Dust.js tags within the body will be evaluated as they normally would.
-
-For example, given the context:
-
-    { foo: 'Hello World!' }
-
-The Dust.js snippet:
-
-    {@upcase}The message is "{foo}".{/upcase}
-
-will resolve to:
-
-    THE MESSAGE IS "HELLO WORLD!".
-
-when evaluated.
-
-Also see the `@downcase` and `@titlecase` helpers.
-
-### `@titlecase`
-
-The "titlecase" helper will convert the tag body to "title case" before emitting it.  Any Dust.js tags within the body will be evaluated as they normally would.
-
-Currently, `@titlecase` will convert the first letter of every whitespace or dash-delimited word to upper case.  Other characters will not be modified.
-
-For example, given the context:
-
-    { foo: 'hello WORLD!' }
-
-The Dust.js snippet:
-
-    {@titlecase}The message is "{foo}".{/titlecase}
-
-will resolve to:
-
-    The Message Is "Hello WORLD!".
-
-when evaluated.
-
-***NOTE*** The precise rules by which `@titlecase` modifies the case of the input text is subject to change in future releases. Eventually we'll settle on a specific contract, but we're not ready to do that yet.
-
-Also see the `@upcase` and `@downcase` helpers.
+See [helpers.md](https://github.com/rodw/common-dustjs-helpers/blob/master/docs/helpers.md) for detailed documentation.
