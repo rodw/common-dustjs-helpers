@@ -136,8 +136,77 @@ Also see the `@sep` helper.
 
 ## `@if`
 
-(Documentation in progress; please see the test cases for examples of use.)
+This helper conditionally executes the tag body (or an `{:else}` block, if any) based on a several types of predicate.
 
+
+### `@if value=true/false`
+
+When the `value` parameter is used by itself, the `@if` helper will execute the body if the specified value is (or evaluates to):
+
+ * the boolean `true`
+ * a positive, non-zero numeric value
+ * a string starting with `T` or `Y` (case-insensitive)
+ * the string `on` (case-insensitive)
+ * a non-empty array or object (map).
+ 
+For example:
+
+    {@if value=foo}YES{:else}NO{/if}
+    
+will emit `YES` for the following contexts:
+
+  * `{foo:true}`
+  * `{foo:"true"}`
+  * `{foo:"Y"}`
+  * `{foo:1}`
+  * `{foo:"1"}`
+  * `{foo:2}`
+  * `{foo:0.1}`
+  * `{foo:"on"}`
+  * `{foo:function() { return true; }}`
+  * `{foo:[1,2]}`
+  * `{foo:{bar:"xyzzy"}}`
+  
+and `NO` for the following contexts:
+
+  * `{foo:false}`
+  * `{foo:"false"}`
+  * `{foo:"N"}`
+  * `{foo:0}`
+  * `{foo:"0"}`
+  * `{foo:-2}`
+  * `{foo:-0.1}`
+  * `{foo:"off"}`
+  * `{foo:function() { return false; }}`
+  * `{foo:[]}`
+  * `{foo:{}}`
+  * `{foo:null}`
+  * `{bar:"anything"}`
+
+### `@if value=foo is=bar`
+
+The `is` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `is` (a context variable or string, possibly including dust markup).  If the values are equal (`===`) the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
+
+### `@if value=foo isnt=bar`
+
+The `isnt` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `is` (a context variable or string, possibly including dust markup).  If the values are NOT equal (`!==`) the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
+
+### `@if value=foo isnt=bar`
+
+The `isnt` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `is` (a context variable or string, possibly including dust markup).  If the values are NOT equal (`!==`) the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
+
+### `@if value=foo above=bar`
+
+The `above` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `above` (a context variable or string, possibly including dust markup) using the `>` operator.  If `value > above` the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
+
+### `@if value=foo below=bar`
+
+The `below` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `below` (a context variable or string, possibly including dust markup) using the `<` operator.  If `value < below` the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
+
+### `@if value=foo matches=bar`
+
+The `matches` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of regular expression specified in `matches` (a context variable or string, possibly including dust markup).  If matched, teh body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
+  
 ## `@last`
 
 The "last" helper will execute its body if the current element is the last element of a list, and its `else` body (if any) otherwise.
@@ -269,7 +338,9 @@ Also see the `@upcase` and `@downcase` helpers.
 
 ## `@unless`
 
-(Documentation in progress; please see the test cases for examples of use.)
+The `@unless` helper is identical to the `@if` helper with the logic cases reversed.  That is, @unless will execute the `{:else}` block (if any) when the condition evaluates to `true` and the body block otherwise.
+
+See the `@if` helper for more details.
 
 ## `@upcase`
 

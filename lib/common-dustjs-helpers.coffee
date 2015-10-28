@@ -7,20 +7,20 @@ class CommonDustjsHelpers
 
   get_helpers: (helpers)=>
     helpers ?= {}
+    helpers['count'] = @count_helper
+    helpers['downcase'] = @downcase_helper
+    helpers['even'] = @even_helper
+    helpers['filter'] = @filter_helper
+    helpers['first'] = @first_helper
+    helpers['idx'] = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
     helpers['if'] = @if_helper
+    helpers['last'] = @last_helper
+    helpers['odd'] = @odd_helper
+    helpers['repeat'] = @repeat_helper
+    helpers['sep'] = @classic_sep unless helpers['sep']? # restore default {@sep} if not found
+    helpers['titlecase'] = helpers['Titlecase'] = @titlecase_helper
     helpers['unless'] = @unless_helper
     helpers['upcase'] =  helpers['UPCASE']= @upcase_helper
-    helpers['downcase'] = @downcase_helper
-    helpers['titlecase'] = helpers['Titlecase'] = @titlecase_helper
-    helpers['filter'] = @filter_helper
-    helpers['count'] = @count_helper
-    helpers['repeat'] = @repeat_helper
-    helpers['first'] = @first_helper
-    helpers['last'] = @last_helper
-    helpers['even'] = @even_helper
-    helpers['odd'] = @odd_helper
-    helpers['sep'] = @classic_sep unless helpers['sep']? # restore default {@sep} if not found
-    helpers['idx'] = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
     return helpers
 
   _eval_dust_string: ( str, chunk, context )->
@@ -167,7 +167,23 @@ class CommonDustjsHelpers
             below = parseFloat(below)
           execute_body = value < below
         else
-          execute_body = value in [true,'true','TRUE','t','T',1,'1','on','ON','yes','YES','y','Y']
+          if typeof value is 'boolean'
+            execute_body = value
+          else if typeof value is 'number'
+            execute_body = value > 0
+          else if typeof value is 'string'
+            if /^(T|Y|(ON))/i.test value
+              execute_body = true
+            else if /^-?[0-9]+(\.[0-9]+)?$/.test value and parseInt(value) > 0
+              execute_body = true
+            else
+              execute_body = false
+          else if Array.isArray(value) and value.length > 0
+            execute_body = true
+          else if value? and typeof value is "object" and (Object.keys(value).length > 0)
+            execute_body = true
+          else
+            execute_body = false
     return execute_body
 
 exports = exports ? this

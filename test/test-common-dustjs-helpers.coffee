@@ -63,6 +63,81 @@ new DustTestSuite("@if helper",{
     context:  { x: true },
     expected: 'before|YES|after'
   }
+  '@if value=1':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: 1 },
+    expected: 'before|YES|after'
+  }
+  '@if value=T':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: "T" },
+    expected: 'before|YES|after'
+  }
+  '@if value=Y':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: "Y" },
+    expected: 'before|YES|after'
+  }
+  '@if value=0':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: 0 },
+    expected: 'before|NO|after'
+  }
+  '@if value=2':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: 2 },
+    expected: 'before|YES|after'
+  }
+  '@if value=\"0\"':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: "0" },
+    expected: 'before|NO|after'
+  }
+  '@if value=null':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: null },
+    expected: 'before|NO|after'
+  }
+  '@if value=[]':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: [] },
+    expected: 'before|NO|after'
+  }
+  '@if value={}':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: {} },
+    expected: 'before|NO|after'
+  }
+  '@if value=[1]':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: [1] },
+    expected: 'before|YES|after'
+  }
+  '@if value={bar:1}':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: {bar:1} },
+    expected: 'before|YES|after'
+  }
+  '@if value=undefined':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { },
+    expected: 'before|NO|after'
+  }
+  '@if value=N':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x:"N" },
+    expected: 'before|NO|after'
+  }
+  '@if value=No':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x:"No" },
+    expected: 'before|NO|after'
+  }
+  '@if value=F':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x:"F" },
+    expected: 'before|NO|after'
+  }
   '@if value=false':{
     source:   'before|{@if value=x}YES{:else}NO{/if}|after',
     context:  { x: false },
