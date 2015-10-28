@@ -51,7 +51,7 @@ and then use the Dust.js instance (`dust`) as you normally would.
 
  * **@odd** - executes only for odd-valued (zero-based) indexes (e.g., `{#foo}{@odd}{.} is odd.{:else}{.} is even.{/odd}{/foo}`)
 
-* **@repeat** - repeat N times (e.g., `{@repeat times="3"}Well{@sep}, {/sep}{/repeat}`).
+ * **@repeat** - repeat N times (e.g., `{@repeat times="3"}Well{@sep}, {/sep}{/repeat}`).
  
  * **@sep** - restores the original dust.js `sep` helper (e.g., `{#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}`)
 
