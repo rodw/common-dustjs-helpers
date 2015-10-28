@@ -8,7 +8,8 @@ CommonDustjsHelpers = require(path.join(LIB_DIR,'common-dustjs-helpers')).Common
 #---------------------------------------------------------------------
 should     = require 'should'
 dust       = require('dustjs-linkedin')
-(new CommonDustjsHelpers()).export_helpers_to(dust)
+(new CommonDustjsHelpers()).export_to(dust)
+
 
 class DustTestSuite
   constructor: (suitename,testdata) ->
@@ -49,6 +50,14 @@ new DustTestSuite("DustTestSuite", {
 }).run_tests_on dust
 
 
+new DustTestSuite("json filter", {
+  'can escape for JSON':{
+    source:   '{foo|json|s}',
+    context:  {foo:'A string with\n\t"FUNKY CHARACTERS".'},
+    expected: "A string with\\n\\t\\\"FUNKY CHARACTERS\\\"."
+  }
+}).run_tests_on dust
+  
 new DustTestSuite("@filter helper", {
   '@filter type=uc':{
     source:   'before|{@filter type="uc"}Foo Bar{/filter}|after',

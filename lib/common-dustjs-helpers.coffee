@@ -1,8 +1,16 @@
 class CommonDustjsHelpers
   @dust = null
 
+  export_to: (dust)=>
+    @export_helpers_to(dust)
+    @export_filters_to(dust)
+    
   export_helpers_to: (dust)=>
     dust.helpers = @get_helpers(dust.helpers)
+    CommonDustjsHelpers.dust = dust
+    
+  export_filters_to: (dust)=>
+    dust.filters = @get_filters(dust.filters)
     CommonDustjsHelpers.dust = dust
 
   get_helpers: (helpers)=>
@@ -22,6 +30,23 @@ class CommonDustjsHelpers
     helpers['unless'] = @unless_helper
     helpers['upcase'] =  helpers['UPCASE']= @upcase_helper
     return helpers
+
+  get_filters: (filters)=>
+    filters ?= {}
+    filters['json'] = @json_filter
+    return filters
+
+  json_filter: (value)=>
+    if typeof value in ['number','boolean']
+      return "#{value}"
+    else if typeof value is 'string'
+      json = JSON.stringify(value)
+      json = json.substring(1,json.length-1)
+      return json
+    else if value?
+      return JSON.stringify(value)
+    else
+      return value
 
   _eval_dust_string: ( str, chunk, context )->
     if typeof str == "function"

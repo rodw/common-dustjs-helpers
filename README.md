@@ -27,7 +27,7 @@ To register the common helper functions with your Dust.js instance, require the 
 
     var helpers = new require("common-dustjs-helpers").CommonDustjsHelpers();
     var dust = require("dustjs"); // or "dustjs-linkedin"
-    helpers.export_helpers_to(dust);
+    helpers.export_to(dust);
 
 and then use the Dust.js instance (`dust`) as you normally would.
 
@@ -62,3 +62,7 @@ and then use the Dust.js instance (`dust`) as you normally would.
  * **@upcase** - converts text to upper case (e.g., `{@upcase}Foo{/upcase}`)
 
 See [helpers.md](https://github.com/rodw/common-dustjs-helpers/blob/master/docs/helpers.md) for detailed documentation.
+
+## The Filters
+
+ * **{|json}** - escapes content for use *within* a JSON string (unlike the built-in `{|js}` which filters text *to* a JSON string or object.)  (Note that generally you'll want to use something like `{foo|json|s}` to prevent Dust's standard entity-encoding, etc. from occurring.)
