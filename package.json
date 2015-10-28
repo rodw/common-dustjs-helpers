@@ -1,7 +1,7 @@
 {
   "name":         "common-dustjs-helpers",
   "description":  "A small library of \"standard\" helper functions for the Dust.js web templating framework.",
-  "version":      "0.1.0",
+  "version":      "0.1.1",
   "keywords":     [ "dust", "dust.js", "linkedin", "helper", "web", "template" ],
   "license":      "MIT",
   "author":       "Rod Waldhoff <the-letter-r-followed-by-my-last-name@gmail.com> http://heyrod.com/",
