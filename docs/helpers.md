@@ -18,6 +18,26 @@ will resolve to:
 
 when evaluated.
 
+## `@deoprhan`
+
+The "deorphan" helper will modify a block of HTML text to avoid a line break between the last two words.
+
+For example, given the context:
+
+    { foo: 'Hello World!' }
+
+The Dust.js snippet:
+
+    {@deoprhan}The message is "{foo}".{/deorphan}
+
+will resolve to:
+
+    The message is "Hello&nbsp;World!".
+
+when evaluated.
+
+Specifically, any sequence of whitespace characters between the last and next-to-last "word" (non-whitespace sequence) in the body will be replaced with the HTML entity for a non-breaking space (`&nbsp;`).
+
 ## `@downcase`
 
 The "downcase" helper will convert the tag body to lower case before emitting it.  Any Dust.js tags within the body will be evaluated as they normally would.

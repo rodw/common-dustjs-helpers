@@ -50,11 +50,39 @@ new DustTestSuite("DustTestSuite", {
 }).run_tests_on dust
 
 
-new DustTestSuite("json filter", {
+new DustTestSuite("|json filter", {
   'can escape for JSON':{
     source:   '{foo|json|s}',
     context:  {foo:'A string with\n\t"FUNKY CHARACTERS".'},
     expected: "A string with\\n\\t\\\"FUNKY CHARACTERS\\\"."
+  }
+}).run_tests_on dust
+
+new DustTestSuite("@deorphan helper", {
+  'can add &nbsp; between the last two words in the body (single line)':{
+    source:"{@deorphan}The quick brown fox {verb} over the lazy dogs.{/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The quick brown fox jumped over the lazy&nbsp;dogs."
+  },
+  'can add &nbsp; between the last two words in the body (multi-space)':{
+    source:"{@deorphan}The quick brown fox {verb} over the lazy      dogs.{/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The quick brown fox jumped over the lazy&nbsp;dogs."
+  },
+  'can add &nbsp; between the last two words in the body (trailing-space)':{
+    source:"{@deorphan}The quick brown fox {verb} over the lazy dogs.   {/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The quick brown fox jumped over the lazy&nbsp;dogs.   "
+  },
+  'can add &nbsp; between the last two words in the body (multi-line)':{
+    source:"{@deorphan}The quick{~n}brown{~n}fox {verb} over the lazy dogs.{~n}{/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The quick\nbrown\nfox jumped over the lazy&nbsp;dogs.\n"
+  }
+  'can add &nbsp; between the last two words in the body (multi-line, multi-space)':{
+    source:"{@deorphan}The\tquick{~n}brown{~n}fox {verb} over the lazy {~n}\tdogs.{~n}{/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The\tquick\nbrown\nfox jumped over the lazy&nbsp;dogs.\n"
   }
 }).run_tests_on dust
   

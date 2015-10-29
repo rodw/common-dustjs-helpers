@@ -17,6 +17,7 @@ class CommonDustjsHelpers
     helpers ?= {}
     helpers['count'] = @count_helper
     helpers['downcase'] = @downcase_helper
+    helpers['deorphan'] = @deorphan_helper
     helpers['even'] = @even_helper
     helpers['filter'] = @filter_helper
     helpers['first'] = @first_helper
@@ -36,7 +37,7 @@ class CommonDustjsHelpers
     filters['json'] = @json_filter
     return filters
 
-  json_filter: (value)=>
+  json_filter: (value)->
     if typeof value in ['number','boolean']
       return "#{value}"
     else if typeof value is 'string'
@@ -54,7 +55,8 @@ class CommonDustjsHelpers
         str = str()
       else
        buf = ''
-       (chunk.tap (data) -> buf += data; return '').render( str, context ).untap()
+       (chunk.tap (data) ->
+         buf += data; return '').render( str, context ).untap()
        str = buf
     return str
 
@@ -65,6 +67,15 @@ class CommonDustjsHelpers
     if (context.stack.index == context.stack.of - 1)
       return chunk
     return bodies.block(chunk, context)
+    
+  deorphan_helper:(chunk,context,bodies,params)=>
+    return chunk.capture bodies.block, context, (data,chunk)=>
+      data = @_eval_dust_string(data,chunk,context)
+      match = data.match /^((.|\s)+[^\s]{1})\s+([^\s]+\s*)$/
+      if match? and match[1]? and match[2]?
+        data = "#{match[1]}&nbsp;#{match[3]}"
+      chunk.write(data)
+      chunk.end()
 
   # renders bodies.block iff b is true, bodies.else otherwise
   _render_if_else:(b, chunk, context, bodies, params)->
