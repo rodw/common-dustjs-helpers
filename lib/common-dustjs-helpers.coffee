@@ -54,10 +54,10 @@ class CommonDustjsHelpers
       if str.length == 0
         str = str()
       else
-       buf = ''
-       (chunk.tap (data) ->
-         buf += data; return '').render( str, context ).untap()
-       str = buf
+        buf = ''
+        (chunk.tap (data) ->
+          buf += data; return '').render( str, context ).untap()
+        str = buf
     return str
 
   classic_idx: (chunk, context, bodies)->
