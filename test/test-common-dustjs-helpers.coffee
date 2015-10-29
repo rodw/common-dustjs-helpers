@@ -14,7 +14,7 @@ dust       = require('dustjs-linkedin')
 class DustTestSuite
   constructor: (suitename,testdata) ->
     @suitename = suitename
-    if !(testdata instanceof Array)
+    unless Array.isArray(testdata)
       a = []
       for name,map of testdata
         map.name = name.replace(/\"/g,"''")

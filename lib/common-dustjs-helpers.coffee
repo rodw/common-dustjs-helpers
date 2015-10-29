@@ -51,8 +51,8 @@ class CommonDustjsHelpers
       return value
 
   _eval_dust_string: ( str, chunk, context )->
-    if typeof str == "function"
-      if str.length == 0
+    if typeof str is "function"
+      if str.length is 0
         str = str()
       else
         buf = ''
@@ -65,7 +65,7 @@ class CommonDustjsHelpers
     return bodies.block(chunk, context.push(context.stack.index))
 
   classic_sep:(chunk, context, bodies)->
-    if (context.stack.index == context.stack.of - 1)
+    if (context.stack.index is (context.stack.of - 1))
       return chunk
     return bodies.block(chunk, context)
     
@@ -100,7 +100,7 @@ class CommonDustjsHelpers
       context.stack.head?['$len'] = times
       for i in [0...times]
         context.stack.head?['$idx'] = i
-        chunk = bodies.block(chunk, context.push(i, i, times));
+        chunk = bodies.block(chunk, context.push(i, i, times))
       context.stack.head?['$idx'] = undefined
       context.stack.head?['$len'] = undefined
     return chunk
@@ -165,6 +165,7 @@ class CommonDustjsHelpers
     execute_body = not execute_body
     return @_render_if_else(execute_body,chunk,context,bodies,params)
 
+  #coffeelint:disable=cyclomatic_complexity
   _inner_if_helper: (chunk,context,bodies,params)=>
     execute_body = false
     if params?
@@ -222,6 +223,7 @@ class CommonDustjsHelpers
           else
             execute_body = false
     return execute_body
+  #coffeelint:enable=cyclomatic_complexity
 
   regexp_helper:(chunk,context,bodies,params)=>
     if params?.string?
