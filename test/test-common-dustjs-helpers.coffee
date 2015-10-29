@@ -58,34 +58,67 @@ new DustTestSuite("|json filter", {
 }).run_tests_on dust
 
 new DustTestSuite("@regexp helper", {
-  'case 1':{
+  'multiple matches/global':{
     source:   '{@regexp string="{links}" pattern="(https://[^\s\n]+)" flags="g"}{#$}{.}{~n}{/$}{:else}The regexp did not match anything.{/regexp}',
     context:  {links:"Some text. https://foo.bar.com/\nhttp://foo.bar.com/\nhttps://foo.bar.com/path\n"},
     expected: "https://foo.bar.com/\nhttps://foo.bar.com/path\n"
   }
+  'no matches/global':{
+    source:   '{@regexp string="{links}" pattern="(https://[^\s\n]+)" flags="g"}{#$}{.}{~n}{/$}{:else}The regexp did not match anything.{/regexp}',
+    context:  {links:"Some text. http://foo.bar.com/\nhttp://foo.bar.com/\nhttp://foo.bar.com/path\n"},
+    expected: "The regexp did not match anything."
+  }
+  'basic':{
+    source:   '{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4'},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var in string':{
+    source:   '{@regexp string="https://{host}.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',host:"acmewidgetcorp"},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var as string':{
+    source:   '{@regexp string=url pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',url:"https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002"},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var in pattern':{
+    source:   '{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^({protocol}://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',protocol:'https'},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var as pattern':{
+    source:   '{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern=pat}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',pat:"^(https://[^\.]+\.atlassian\.net\/)"},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'no match':{
+    source:   '{@regexp string="xyzzy" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{:else}NO MATCH!{/regexp}',
+    context:  {key:'ALFA-4'},
+    expected: "NO MATCH!"
+  }
+  'rename match var':{
+    source:   '{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)" var="M"}{$M[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4'},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'with flags':{
+    source:   '{@regexp string="hTTps://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(HTTPS://[^\.]+\.ATLASSIAN\.NET\/)" var="M" flags="i"}{$M[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4'},
+    expected: "hTTps://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var in flags':{
+    source:   '{@regexp string="hTTps://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(HTTPS://[^\.]+\.ATLASSIAN\.NET\/)" var="M" flags="{f}"}{$M[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',f:"i"},
+    expected: "hTTps://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var as flags':{
+    source:   '{@regexp string="hTTps://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(HTTPS://[^\.]+\.ATLASSIAN\.NET\/)" var="M" flags=f}{$M[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',f:"i"},
+    expected: "hTTps://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
 }).run_tests_on dust
-
-  
-  # it 'can select data from a regexp', (done)->
-  #   tests = [
-  #     ['{$match[1]}',{"$match":['x','y']},"y"]
-  #     ['{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',{key:'ALFA-4'},"https://acmewidgetcorp.atlassian.net/ALFA-4"]
-  #     ['{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)" var="M"}{$M[1]}{key}{/regexp}',{key:'ALFA-4'},"https://acmewidgetcorp.atlassian.net/ALFA-4"]
-  #     ['{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)" var="match"}{$match[1]}{key}{/regexp}',{key:'ALFA-4'},"https://acmewidgetcorp.atlassian.net/ALFA-4"]
-  #     ['{@regexp string="https://ACMEWIDGETCORP.atlassian.NET/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)" var="" flags="i"}{$[1]}{key}{/regexp}',{key:'ALFA-4'},"https://ACMEWIDGETCORP.atlassian.NET/ALFA-4"]
-  #     ['{@regexp string="https://xyzzy.atlassian.com/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$match[1]}{key}{:else}The regexp did not match for {key}.{/regexp}',{key:'ALFA-4'},"The regexp did not match for ALFA-4."]
-  #     [']
-  #   ]
-  #   action = (test,i,l,next)->
-  #     template = test[0]
-  #     context = test[1]
-  #     expected = test[2]
-  #     DustHelpers.render_template template, context, (err,found)->
-  #       should.not.exist err
-  #       # console.log "FOUND: #{found}"
-  #       found.should.equal expected
-  #       next()
-  #   Util.for_each_async tests, action, ()->done()
 
 new DustTestSuite("@deorphan helper", {
   'can add &nbsp; between the last two words in the body (single line)':{
