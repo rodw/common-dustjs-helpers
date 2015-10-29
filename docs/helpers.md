@@ -18,7 +18,7 @@ will resolve to:
 
 when evaluated.
 
-## `@deoprhan`
+## `@deorphan`
 
 The "deorphan" helper will modify a block of HTML text to avoid a line break between the last two words.
 
@@ -28,7 +28,7 @@ For example, given the context:
 
 The Dust.js snippet:
 
-    {@deoprhan}The message is "{foo}".{/deorphan}
+    {@deorphan}The message is "{foo}".{/deorphan}
 
 will resolve to:
 
