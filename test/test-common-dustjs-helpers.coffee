@@ -49,7 +49,6 @@ new DustTestSuite("DustTestSuite", {
   }
 }).run_tests_on dust
 
-
 new DustTestSuite("|json filter", {
   'can escape for JSON':{
     source:   '{foo|json|s}',
@@ -57,6 +56,36 @@ new DustTestSuite("|json filter", {
     expected: "A string with\\n\\t\\\"FUNKY CHARACTERS\\\"."
   }
 }).run_tests_on dust
+
+new DustTestSuite("@regexp helper", {
+  'case 1':{
+    source:   '{@regexp string="{links}" pattern="(https://[^\s\n]+)" flags="g"}{#$}{.}{~n}{/$}{:else}The regexp did not match anything.{/regexp}',
+    context:  {links:"Some text. https://foo.bar.com/\nhttp://foo.bar.com/\nhttps://foo.bar.com/path\n"},
+    expected: "https://foo.bar.com/\nhttps://foo.bar.com/path\n"
+  }
+}).run_tests_on dust
+
+  
+  # it 'can select data from a regexp', (done)->
+  #   tests = [
+  #     ['{$match[1]}',{"$match":['x','y']},"y"]
+  #     ['{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',{key:'ALFA-4'},"https://acmewidgetcorp.atlassian.net/ALFA-4"]
+  #     ['{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)" var="M"}{$M[1]}{key}{/regexp}',{key:'ALFA-4'},"https://acmewidgetcorp.atlassian.net/ALFA-4"]
+  #     ['{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)" var="match"}{$match[1]}{key}{/regexp}',{key:'ALFA-4'},"https://acmewidgetcorp.atlassian.net/ALFA-4"]
+  #     ['{@regexp string="https://ACMEWIDGETCORP.atlassian.NET/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)" var="" flags="i"}{$[1]}{key}{/regexp}',{key:'ALFA-4'},"https://ACMEWIDGETCORP.atlassian.NET/ALFA-4"]
+  #     ['{@regexp string="https://xyzzy.atlassian.com/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$match[1]}{key}{:else}The regexp did not match for {key}.{/regexp}',{key:'ALFA-4'},"The regexp did not match for ALFA-4."]
+  #     [']
+  #   ]
+  #   action = (test,i,l,next)->
+  #     template = test[0]
+  #     context = test[1]
+  #     expected = test[2]
+  #     DustHelpers.render_template template, context, (err,found)->
+  #       should.not.exist err
+  #       # console.log "FOUND: #{found}"
+  #       found.should.equal expected
+  #       next()
+  #   Util.for_each_async tests, action, ()->done()
 
 new DustTestSuite("@deorphan helper", {
   'can add &nbsp; between the last two words in the body (single line)':{

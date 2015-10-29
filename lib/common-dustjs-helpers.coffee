@@ -25,6 +25,7 @@ class CommonDustjsHelpers
     helpers['if'] = @if_helper
     helpers['last'] = @last_helper
     helpers['odd'] = @odd_helper
+    helpers['regexp'] = @regexp_helper
     helpers['repeat'] = @repeat_helper
     helpers['sep'] = @classic_sep unless helpers['sep']? # restore default {@sep} if not found
     helpers['titlecase'] = helpers['Titlecase'] = @titlecase_helper
@@ -221,6 +222,26 @@ class CommonDustjsHelpers
           else
             execute_body = false
     return execute_body
+
+  regexp_helper:(chunk,context,bodies,params)=>
+    if params?.string?
+      string = @_eval_dust_string(params.string,chunk,context)
+    if params?.pattern?
+      pattern = @_eval_dust_string(params.pattern,chunk,context)
+    if params?.flags?
+      flags = @_eval_dust_string(params.flags,chunk,context)
+    if params?.var?
+      match = @_eval_dust_string(params.var,chunk,context)
+    unless match?
+      match = ""
+    match = "$#{match}"
+    unless string? and pattern?
+      return @_render_if_else false, chunk, context, bodies, params
+    else
+      pattern = new RegExp(pattern,flags)
+      ctx = {}
+      ctx[match] = string.match pattern
+      return @_render_if_else ctx[match]?, chunk, context.push(ctx), bodies, params
 
 exports = exports ? this
 exports.CommonDustjsHelpers = CommonDustjsHelpers
