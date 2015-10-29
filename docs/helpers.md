@@ -227,6 +227,34 @@ The `below` parameter will compare the value of `value` (a context variable or s
 
 The `matches` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of regular expression specified in `matches` (a context variable or string, possibly including dust markup).  If matched, teh body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
   
+## `@index`
+
+When looping over an array, this helper emits the one-based index of the current element.
+
+For example, given the context:
+
+    { mylist: ["A","B","C"] }
+  
+The Dust.js snippet:
+
+    {#mylist}{.} is {@index/}.{@sep} {/sep}{/mylist}
+
+yields:
+
+    A is 1. B is 2. C is 3.
+
+When a body is provided, `@index` sets the one-based index as the current context and evalutates the body as normal.
+
+For example, the Dust.js snippet:
+
+    {#mylist}{.} {@index}is {.}{/index}.{@sep} {/sep}{/mylist}
+
+also yields:
+
+    A is 1. B is 2. C is 3.
+
+Note that `{@index}{/index}` yields nothing. Only the `{@index/}` syntax emits the index value without the `{.}` tag.
+  
 ## `@last`
 
 The "last" helper will execute its body if the current element is the last element of a list, and its `else` body (if any) otherwise.

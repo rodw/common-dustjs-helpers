@@ -57,6 +57,29 @@ new DustTestSuite("|json filter", {
   }
 }).run_tests_on dust
 
+new DustTestSuite("@index helper", {
+  'yields a one-based index value ({@index/} case)':{
+    source:   '{#foo}{.} is index number {@index/}{@sep}; {/sep}{/foo}.',
+    context:  {foo:['A','B','C','D']},
+    expected: "A is index number 1; B is index number 2; C is index number 3; D is index number 4."
+  }
+  'yields a one-based index value ({@index}{.}{/index} case)':{
+    source:   '{#foo}{.} is {@index}index number {.}{/index}{@sep}; {/sep}{/foo}.',
+    context:  {foo:['A','B','C','D']},
+    expected: "A is index number 1; B is index number 2; C is index number 3; D is index number 4."
+  }
+  'does nothing outside of a list ({@index}{.}{/index} case)':{
+    source:   '{@index}index number {.}{/index}',
+    context:  {foo:['A','B','C','D']},
+    expected: "index number "
+  }
+  'does nothing outside of a list ({@index/} case)':{
+    source:   'index number {@index/}',
+    context:  {foo:['A','B','C','D']},
+    expected: "index number "
+  }
+}).run_tests_on dust
+
 new DustTestSuite("@regexp helper", {
   'multiple matches/global':{
     source:   '{@regexp string="{links}" pattern="(https://[^\s\n]+)" flags="g"}{#$}{.}{~n}{/$}{:else}The regexp did not match anything.{/regexp}',

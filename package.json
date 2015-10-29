@@ -21,7 +21,6 @@
     "marked"          : "latest",
     "mocha"           : "latest",
     "should"          : "latest"
-
   },
   "engines": {
     "node":       ">= 0.10.3"

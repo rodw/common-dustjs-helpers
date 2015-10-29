@@ -28,6 +28,8 @@ class CommonDustjsHelpers
     helpers['first'] = @first_helper
     helpers['idx'] = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
     helpers['if'] = @if_helper
+    helpers['idx'] = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
+    helpers['index'] = @index_helper
     helpers['last'] = @last_helper
     helpers['odd'] = @odd_helper
     helpers['regexp'] = @regexp_helper
@@ -65,6 +67,17 @@ class CommonDustjsHelpers
           buf += data; return '').render( str, context ).untap()
         str = buf
     return str
+
+  index_helper: (chunk, context, bodies, params)->
+    if context?.stack?.index?
+      index = 1 + context.stack.index
+    else
+      index = null
+    if bodies?.block?
+      return bodies.block(chunk, context.push(index))
+    else
+      chunk.write index
+      return chunk
 
   classic_idx: (chunk, context, bodies)->
     return bodies.block(chunk, context.push(context.stack.index))

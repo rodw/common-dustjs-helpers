@@ -49,6 +49,8 @@ and then use the Dust.js instance (`dust`) as you normally would.
 
  * **@if** - conditionally executes the body (e.g., `{@if value=foo is="Bar"}Foo === "Bar"{:else}Foo !== "Bar"{/if}`).
 
+ * **@index** - yields the one-based index of the current element (e.g., `{#foo}{.} is index {@index/}`).
+
  * **@last** - executes only for the last element in a list (e.g., `{#foo}{@last}{.} is last.{:else}{.} is not last.{/last}{/foo}`).
 
  * **@odd** - executes only for odd-valued (zero-based) indexes (e.g., `{#foo}{@odd}{.} is odd.{:else}{.} is even.{/odd}{/foo}`)
