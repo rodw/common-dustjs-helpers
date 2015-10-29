@@ -12,6 +12,11 @@ class CommonDustjsHelpers
   export_filters_to: (dust)=>
     dust.filters = @get_filters(dust.filters)
     CommonDustjsHelpers.dust = dust
+  
+  # Render the given `context` using the dust script in the given `template_body`,
+  # invoking `callback(err,output)` when done.
+  render_template:(template_body, context, callback)->
+    CommonDustjsHelpers.dust.renderSource template_body, context, callback
 
   get_helpers: (helpers)=>
     helpers ?= {}
