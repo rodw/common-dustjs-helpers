@@ -8,12 +8,13 @@ CommonDustjsHelpers = require(path.join(LIB_DIR,'common-dustjs-helpers')).Common
 #---------------------------------------------------------------------
 should     = require 'should'
 dust       = require('dustjs-linkedin')
-(new CommonDustjsHelpers()).export_helpers_to(dust)
+(new CommonDustjsHelpers()).export_to(dust)
+
 
 class DustTestSuite
   constructor: (suitename,testdata) ->
     @suitename = suitename
-    if !(testdata instanceof Array)
+    unless Array.isArray(testdata)
       a = []
       for name,map of testdata
         map.name = name.replace(/\"/g,"''")
@@ -48,7 +49,128 @@ new DustTestSuite("DustTestSuite", {
   }
 }).run_tests_on dust
 
+new DustTestSuite("|json filter", {
+  'can escape for JSON':{
+    source:   '{foo|json|s}',
+    context:  {foo:'A string with\n\t"FUNKY CHARACTERS".'},
+    expected: "A string with\\n\\t\\\"FUNKY CHARACTERS\\\"."
+  }
+}).run_tests_on dust
 
+new DustTestSuite("@index helper", {
+  'yields a one-based index value ({@index/} case)':{
+    source:   '{#foo}{.} is index number {@index/}{@sep}; {/sep}{/foo}.',
+    context:  {foo:['A','B','C','D']},
+    expected: "A is index number 1; B is index number 2; C is index number 3; D is index number 4."
+  }
+  'yields a one-based index value ({@index}{.}{/index} case)':{
+    source:   '{#foo}{.} is {@index}index number {.}{/index}{@sep}; {/sep}{/foo}.',
+    context:  {foo:['A','B','C','D']},
+    expected: "A is index number 1; B is index number 2; C is index number 3; D is index number 4."
+  }
+  'does nothing outside of a list ({@index}{.}{/index} case)':{
+    source:   '{@index}index number {.}{/index}',
+    context:  {foo:['A','B','C','D']},
+    expected: "index number "
+  }
+  'does nothing outside of a list ({@index/} case)':{
+    source:   'index number {@index/}',
+    context:  {foo:['A','B','C','D']},
+    expected: "index number "
+  }
+}).run_tests_on dust
+
+new DustTestSuite("@regexp helper", {
+  'multiple matches/global':{
+    source:   '{@regexp string="{links}" pattern="(https://[^\s\n]+)" flags="g"}{#$}{.}{~n}{/$}{:else}The regexp did not match anything.{/regexp}',
+    context:  {links:"Some text. https://foo.bar.com/\nhttp://foo.bar.com/\nhttps://foo.bar.com/path\n"},
+    expected: "https://foo.bar.com/\nhttps://foo.bar.com/path\n"
+  }
+  'no matches/global':{
+    source:   '{@regexp string="{links}" pattern="(https://[^\s\n]+)" flags="g"}{#$}{.}{~n}{/$}{:else}The regexp did not match anything.{/regexp}',
+    context:  {links:"Some text. http://foo.bar.com/\nhttp://foo.bar.com/\nhttp://foo.bar.com/path\n"},
+    expected: "The regexp did not match anything."
+  }
+  'basic':{
+    source:   '{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4'},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var in string':{
+    source:   '{@regexp string="https://{host}.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',host:"acmewidgetcorp"},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var as string':{
+    source:   '{@regexp string=url pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',url:"https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002"},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var in pattern':{
+    source:   '{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^({protocol}://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',protocol:'https'},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var as pattern':{
+    source:   '{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern=pat}{$[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',pat:"^(https://[^\.]+\.atlassian\.net\/)"},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'no match':{
+    source:   '{@regexp string="xyzzy" pattern="^(https://[^\.]+\.atlassian\.net\/)"}{$[1]}{key}{:else}NO MATCH!{/regexp}',
+    context:  {key:'ALFA-4'},
+    expected: "NO MATCH!"
+  }
+  'rename match var':{
+    source:   '{@regexp string="https://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(https://[^\.]+\.atlassian\.net\/)" var="M"}{$M[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4'},
+    expected: "https://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'with flags':{
+    source:   '{@regexp string="hTTps://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(HTTPS://[^\.]+\.ATLASSIAN\.NET\/)" var="M" flags="i"}{$M[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4'},
+    expected: "hTTps://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var in flags':{
+    source:   '{@regexp string="hTTps://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(HTTPS://[^\.]+\.ATLASSIAN\.NET\/)" var="M" flags="{f}"}{$M[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',f:"i"},
+    expected: "hTTps://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+  'dust var as flags':{
+    source:   '{@regexp string="hTTps://acmewidgetcorp.atlassian.net/rest/api/2/issue/10003/comment/10002" pattern="^(HTTPS://[^\.]+\.ATLASSIAN\.NET\/)" var="M" flags=f}{$M[1]}{key}{/regexp}',
+    context:  {key:'ALFA-4',f:"i"},
+    expected: "hTTps://acmewidgetcorp.atlassian.net/ALFA-4"
+  }
+}).run_tests_on dust
+
+new DustTestSuite("@deorphan helper", {
+  'can add &nbsp; between the last two words in the body (single line)':{
+    source:"{@deorphan}The quick brown fox {verb} over the lazy dogs.{/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The quick brown fox jumped over the lazy&nbsp;dogs."
+  },
+  'can add &nbsp; between the last two words in the body (multi-space)':{
+    source:"{@deorphan}The quick brown fox {verb} over the lazy      dogs.{/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The quick brown fox jumped over the lazy&nbsp;dogs."
+  },
+  'can add &nbsp; between the last two words in the body (trailing-space)':{
+    source:"{@deorphan}The quick brown fox {verb} over the lazy dogs.   {/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The quick brown fox jumped over the lazy&nbsp;dogs.   "
+  },
+  'can add &nbsp; between the last two words in the body (multi-line)':{
+    source:"{@deorphan}The quick{~n}brown{~n}fox {verb} over the lazy dogs.{~n}{/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The quick\nbrown\nfox jumped over the lazy&nbsp;dogs.\n"
+  }
+  'can add &nbsp; between the last two words in the body (multi-line, multi-space)':{
+    source:"{@deorphan}The\tquick{~n}brown{~n}fox {verb} over the lazy {~n}\tdogs.{~n}{/deorphan}"
+    context:  {verb:'jumped'},
+    expected: "The\tquick\nbrown\nfox jumped over the lazy&nbsp;dogs.\n"
+  }
+}).run_tests_on dust
+  
 new DustTestSuite("@filter helper", {
   '@filter type=uc':{
     source:   'before|{@filter type="uc"}Foo Bar{/filter}|after',

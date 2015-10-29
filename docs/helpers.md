@@ -18,6 +18,26 @@ will resolve to:
 
 when evaluated.
 
+## `@deorphan`
+
+The "deorphan" helper will modify a block of HTML text to avoid a line break between the last two words.
+
+For example, given the context:
+
+    { foo: 'Hello World!' }
+
+The Dust.js snippet:
+
+    {@deorphan}The message is "{foo}".{/deorphan}
+
+will resolve to:
+
+    The message is "Hello&nbsp;World!".
+
+when evaluated.
+
+Specifically, any sequence of whitespace characters between the last and next-to-last "word" (non-whitespace sequence) in the body will be replaced with the HTML entity for a non-breaking space (`&nbsp;`).
+
 ## `@downcase`
 
 The "downcase" helper will convert the tag body to lower case before emitting it.  Any Dust.js tags within the body will be evaluated as they normally would.
@@ -206,6 +226,34 @@ The `below` parameter will compare the value of `value` (a context variable or s
 ### `@if value=foo matches=bar`
 
 The `matches` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of regular expression specified in `matches` (a context variable or string, possibly including dust markup).  If matched, teh body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
+  
+## `@index`
+
+When looping over an array, this helper emits the one-based index of the current element.
+
+For example, given the context:
+
+    { mylist: ["A","B","C"] }
+  
+The Dust.js snippet:
+
+    {#mylist}{.} is {@index/}.{@sep} {/sep}{/mylist}
+
+yields:
+
+    A is 1. B is 2. C is 3.
+
+When a body is provided, `@index` sets the one-based index as the current context and evalutates the body as normal.
+
+For example, the Dust.js snippet:
+
+    {#mylist}{.} {@index}is {.}{/index}.{@sep} {/sep}{/mylist}
+
+also yields:
+
+    A is 1. B is 2. C is 3.
+
+Note that `{@index}{/index}` yields nothing. Only the `{@index/}` syntax emits the index value without the `{.}` tag.
   
 ## `@last`
 

@@ -27,13 +27,15 @@ To register the common helper functions with your Dust.js instance, require the 
 
     var helpers = new require("common-dustjs-helpers").CommonDustjsHelpers();
     var dust = require("dustjs"); // or "dustjs-linkedin"
-    helpers.export_helpers_to(dust);
+    helpers.export_to(dust);
 
 and then use the Dust.js instance (`dust`) as you normally would.
 
 ## The Helpers
 
  * **@count** - emits the size of an array or similiar container (e.g., `{@count of=foo/}`).
+ 
+ * **@deorphan** - replaces whitespace between the last two "words" of the body to `&nbsp;` (e.g., `{@deorphan}Foo bar.{/deorphan}` becomes `Foo&nbsp;bar.`).
  
  * **@downcase** - converts text to lower case (e.g., `{@downcase}Foo{/downcase}`).
  
@@ -46,6 +48,8 @@ and then use the Dust.js instance (`dust`) as you normally would.
  * **@idx** - restores the original dust.js `idx` helper (e.g., `{#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}`)
 
  * **@if** - conditionally executes the body (e.g., `{@if value=foo is="Bar"}Foo === "Bar"{:else}Foo !== "Bar"{/if}`).
+
+ * **@index** - yields the one-based index of the current element (e.g., `{#foo}{.} is index {@index/}`).
 
  * **@last** - executes only for the last element in a list (e.g., `{#foo}{@last}{.} is last.{:else}{.} is not last.{/last}{/foo}`).
 
@@ -62,3 +66,7 @@ and then use the Dust.js instance (`dust`) as you normally would.
  * **@upcase** - converts text to upper case (e.g., `{@upcase}Foo{/upcase}`)
 
 See [helpers.md](https://github.com/rodw/common-dustjs-helpers/blob/master/docs/helpers.md) for detailed documentation.
+
+## The Filters
+
+ * **{|json}** - escapes content for use *within* a JSON string (unlike the built-in `{|js}` which filters text *to* a JSON string or object.)  (Note that generally you'll want to use something like `{foo|json|s}` to prevent Dust's standard entity-encoding, etc. from occurring.)

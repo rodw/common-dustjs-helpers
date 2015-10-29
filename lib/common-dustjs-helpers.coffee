@@ -1,21 +1,38 @@
 class CommonDustjsHelpers
   @dust = null
 
+  export_to: (dust)=>
+    @export_helpers_to(dust)
+    @export_filters_to(dust)
+    
   export_helpers_to: (dust)=>
     dust.helpers = @get_helpers(dust.helpers)
     CommonDustjsHelpers.dust = dust
+    
+  export_filters_to: (dust)=>
+    dust.filters = @get_filters(dust.filters)
+    CommonDustjsHelpers.dust = dust
+  
+  # Render the given `context` using the dust script in the given `template_body`,
+  # invoking `callback(err,output)` when done.
+  render_template:(template_body, context, callback)->
+    CommonDustjsHelpers.dust.renderSource template_body, context, callback
 
   get_helpers: (helpers)=>
     helpers ?= {}
     helpers['count'] = @count_helper
     helpers['downcase'] = @downcase_helper
+    helpers['deorphan'] = @deorphan_helper
     helpers['even'] = @even_helper
     helpers['filter'] = @filter_helper
     helpers['first'] = @first_helper
     helpers['idx'] = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
     helpers['if'] = @if_helper
+    helpers['idx'] = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
+    helpers['index'] = @index_helper
     helpers['last'] = @last_helper
     helpers['odd'] = @odd_helper
+    helpers['regexp'] = @regexp_helper
     helpers['repeat'] = @repeat_helper
     helpers['sep'] = @classic_sep unless helpers['sep']? # restore default {@sep} if not found
     helpers['titlecase'] = helpers['Titlecase'] = @titlecase_helper
@@ -23,23 +40,61 @@ class CommonDustjsHelpers
     helpers['upcase'] =  helpers['UPCASE']= @upcase_helper
     return helpers
 
+  get_filters: (filters)=>
+    filters ?= {}
+    filters['json'] = @json_filter
+    return filters
+
+  json_filter: (value)->
+    if typeof value in ['number','boolean']
+      return "#{value}"
+    else if typeof value is 'string'
+      json = JSON.stringify(value)
+      json = json.substring(1,json.length-1)
+      return json
+    else if value?
+      return JSON.stringify(value)
+    else
+      return value
+
   _eval_dust_string: ( str, chunk, context )->
-    if typeof str == "function"
-      if str.length == 0
+    if typeof str is "function"
+      if str.length is 0
         str = str()
       else
-       buf = ''
-       (chunk.tap (data) -> buf += data; return '').render( str, context ).untap()
-       str = buf
+        buf = ''
+        (chunk.tap (data) ->
+          buf += data; return '').render( str, context ).untap()
+        str = buf
     return str
+
+  index_helper: (chunk, context, bodies, params)->
+    if context?.stack?.index?
+      index = 1 + context.stack.index
+    else
+      index = null
+    if bodies?.block?
+      return bodies.block(chunk, context.push(index))
+    else
+      chunk.write index
+      return chunk
 
   classic_idx: (chunk, context, bodies)->
     return bodies.block(chunk, context.push(context.stack.index))
 
   classic_sep:(chunk, context, bodies)->
-    if (context.stack.index == context.stack.of - 1)
+    if (context.stack.index is (context.stack.of - 1))
       return chunk
     return bodies.block(chunk, context)
+    
+  deorphan_helper:(chunk,context,bodies,params)=>
+    return chunk.capture bodies.block, context, (data,chunk)=>
+      data = @_eval_dust_string(data,chunk,context)
+      match = data.match /^((.|\s)+[^\s]{1})\s+([^\s]+\s*)$/
+      if match? and match[1]? and match[2]?
+        data = "#{match[1]}&nbsp;#{match[3]}"
+      chunk.write(data)
+      chunk.end()
 
   # renders bodies.block iff b is true, bodies.else otherwise
   _render_if_else:(b, chunk, context, bodies, params)->
@@ -63,7 +118,7 @@ class CommonDustjsHelpers
       context.stack.head?['$len'] = times
       for i in [0...times]
         context.stack.head?['$idx'] = i
-        chunk = bodies.block(chunk, context.push(i, i, times));
+        chunk = bodies.block(chunk, context.push(i, i, times))
       context.stack.head?['$idx'] = undefined
       context.stack.head?['$len'] = undefined
     return chunk
@@ -128,6 +183,7 @@ class CommonDustjsHelpers
     execute_body = not execute_body
     return @_render_if_else(execute_body,chunk,context,bodies,params)
 
+  #coffeelint:disable=cyclomatic_complexity
   _inner_if_helper: (chunk,context,bodies,params)=>
     execute_body = false
     if params?
@@ -185,6 +241,27 @@ class CommonDustjsHelpers
           else
             execute_body = false
     return execute_body
+  #coffeelint:enable=cyclomatic_complexity
+
+  regexp_helper:(chunk,context,bodies,params)=>
+    if params?.string?
+      string = @_eval_dust_string(params.string,chunk,context)
+    if params?.pattern?
+      pattern = @_eval_dust_string(params.pattern,chunk,context)
+    if params?.flags?
+      flags = @_eval_dust_string(params.flags,chunk,context)
+    if params?.var?
+      match = @_eval_dust_string(params.var,chunk,context)
+    unless match?
+      match = ""
+    match = "$#{match}"
+    unless string? and pattern?
+      return @_render_if_else false, chunk, context, bodies, params
+    else
+      pattern = new RegExp(pattern,flags)
+      ctx = {}
+      ctx[match] = string.match pattern
+      return @_render_if_else ctx[match]?, chunk, context.push(ctx), bodies, params
 
 exports = exports ? this
 exports.CommonDustjsHelpers = CommonDustjsHelpers
