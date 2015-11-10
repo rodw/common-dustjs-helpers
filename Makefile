@@ -71,10 +71,7 @@ module: test coverage docs
 	cp README.md $(MODULE_DIR)
 	cp LICENSE $(MODULE_DIR)
 	cp -r lib $(MODULE_DIR)
-	cp -r test $(MODULE_DIR)
-	cp -r docs $(MODULE_DIR)
 	cp $(PACKAGE_JSON) $(MODULE_DIR)
-	cp Makefile $(MODULE_DIR)
 test-module-install: clean-test-module-install module
 	mkdir -p ${TEST_MODULE_DIR}
 	cd ${TEST_MODULE_DIR}
