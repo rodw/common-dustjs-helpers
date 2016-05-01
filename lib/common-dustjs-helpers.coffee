@@ -4,15 +4,15 @@ class CommonDustjsHelpers
   export_to: (dust)=>
     @export_helpers_to(dust)
     @export_filters_to(dust)
-    
+
   export_helpers_to: (dust)=>
     dust.helpers = @get_helpers(dust.helpers)
     CommonDustjsHelpers.dust = dust
-    
+
   export_filters_to: (dust)=>
     dust.filters = @get_filters(dust.filters)
     CommonDustjsHelpers.dust = dust
-  
+
   # Render the given `context` using the dust script in the given `template_body`,
   # invoking `callback(err,output)` when done.
   render_template:(template_body, context, callback)->
@@ -21,14 +21,13 @@ class CommonDustjsHelpers
   get_helpers: (helpers)=>
     helpers ?= {}
     helpers['count'] = @count_helper
-    helpers['downcase'] = @downcase_helper
     helpers['deorphan'] = @deorphan_helper
+    helpers['downcase'] = @downcase_helper
     helpers['even'] = @even_helper
     helpers['filter'] = @filter_helper
     helpers['first'] = @first_helper
     helpers['idx'] = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
     helpers['if'] = @if_helper
-    helpers['idx'] = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
     helpers['index'] = @index_helper
     helpers['last'] = @last_helper
     helpers['odd'] = @odd_helper
@@ -86,7 +85,7 @@ class CommonDustjsHelpers
     if (context.stack.index is (context.stack.of - 1))
       return chunk
     return bodies.block(chunk, context)
-    
+
   deorphan_helper:(chunk,context,bodies,params)=>
     return chunk.capture bodies.block, context, (data,chunk)=>
       data = @_eval_dust_string(data,chunk,context)
