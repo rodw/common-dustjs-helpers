@@ -473,6 +473,23 @@ when evaluated.
 
 Also see the `@upcase` and `@downcase` helpers.
 
+## `@trim`
+
+The "trim" helper removes leading and trailing whitespace from its body. Any Dust.js tags within the body will be evaluated as they normally would.
+
+For example, given the context:
+
+    { foo: '  example  ' }
+
+The Dust.js snippet:
+
+    This is an {@trim}{~n}{~s}{foo} {/trim}.
+
+will resolve to:
+
+    This is an example.
+
+
 ## `@unless`
 
 The `@unless` helper is identical to the `@if` helper with the logic cases reversed.  That is, @unless will execute the `{:else}` block (if any) when the condition evaluates to `true` and the body block otherwise.
