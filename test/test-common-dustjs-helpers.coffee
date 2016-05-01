@@ -60,8 +60,6 @@ new DustTestSuite("|json filter", {
   }
 }).run_tests_on dust
 
-
-
 for i in [0...10]
 
   new DustTestSuite("@random helper", {
