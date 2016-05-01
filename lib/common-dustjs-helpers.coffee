@@ -20,23 +20,24 @@ class CommonDustjsHelpers
 
   get_helpers: (helpers)=>
     helpers ?= {}
-    helpers['count'] = @count_helper
-    helpers['deorphan'] = @deorphan_helper
-    helpers['downcase'] = @downcase_helper
-    helpers['even'] = @even_helper
-    helpers['filter'] = @filter_helper
-    helpers['first'] = @first_helper
-    helpers['idx'] = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
-    helpers['if'] = @if_helper
-    helpers['index'] = @index_helper
-    helpers['last'] = @last_helper
-    helpers['odd'] = @odd_helper
-    helpers['regexp'] = @regexp_helper
-    helpers['repeat'] = @repeat_helper
-    helpers['sep'] = @classic_sep unless helpers['sep']? # restore default {@sep} if not found
+    helpers['count']     = @count_helper
+    helpers['deorphan']  = @deorphan_helper
+    helpers['downcase']  = @downcase_helper
+    helpers['even']      = @even_helper
+    helpers['filter']    = @filter_helper
+    helpers['first']     = @first_helper
+    helpers['idx']       = @classic_idx unless helpers['idx']? # restore default {@idx} if not found
+    helpers['if']        = @if_helper
+    helpers['index']     = @index_helper
+    helpers['last']      = @last_helper
+    helpers['odd']       = @odd_helper
+    helpers['random']    = @random_helper
+    helpers['regexp']    = @regexp_helper
+    helpers['repeat']    = @repeat_helper
+    helpers['sep']       = @classic_sep unless helpers['sep']? # restore default {@sep} if not found
     helpers['titlecase'] = helpers['Titlecase'] = @titlecase_helper
-    helpers['unless'] = @unless_helper
-    helpers['upcase'] =  helpers['UPCASE']= @upcase_helper
+    helpers['unless']    = @unless_helper
+    helpers['upcase']    = helpers['UPCASE']= @upcase_helper
     return helpers
 
   get_filters: (filters)=>
@@ -66,6 +67,36 @@ class CommonDustjsHelpers
           buf += data; return '').render( str, context ).untap()
         str = buf
     return str
+
+  # if `val` is a simple integer, return it as an integer, otherwise return null
+  _to_int: (val)=>
+    if /^[0-9]+/.test val
+      return parseInt(val)
+    else
+      return null
+
+  random_helper: (chunk,context,bodies,params)=>
+    if params?
+      if params.m? or params.min? or params.from?
+        min = @_to_int(@_eval_dust_string((params.m ? params.min ? params.from), chunk, context))
+      if params.M? or params.max? or params.to?
+        max = @_to_int(@_eval_dust_string((params.M ? params.max ? params.to), chunk, context))
+      if params.v? or params.var? or params.val? or params.set? or params.s?
+        ctxvar = @_eval_dust_string((params.v ? params.var ? params.val ? params.set ? params.s), chunk, context)
+    min ?= 0
+    max ?= 1
+    if min > max
+      [min,max] = [max,min]
+    if max - min is 0
+      v = 0
+    else
+      v = Math.round(Math.random()*(max-min))+min
+    if ctxvar?
+      context.stack.head?[ctxvar] = v
+    if bodies?.block?
+      return bodies.block(chunk, context.push(v))
+    else
+      return chunk
 
   index_helper: (chunk, context, bodies, params)->
     if context?.stack?.index?

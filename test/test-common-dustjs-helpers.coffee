@@ -33,7 +33,10 @@ class DustTestSuite
       dust.loadSource dust.compile( input.source, input.name)
       dust.render input.name, input.context, (err,out)=>
         should.not.exist err, "Did not expect an error when processing template \"#{input.name}\". Found: #{err}"
-        out.should.equal input.expected, "Template \"#{input.name}\" failed to generate expected value. Found:\n#{out}"
+        if input.expected.test?
+          (input.expected.test out).should.be.ok
+        else
+          out.should.equal input.expected, "Template \"#{input.name}\" failed to generate expected value. Found:\n#{out}"
         done()
 
 new DustTestSuite("DustTestSuite", {
@@ -56,6 +59,34 @@ new DustTestSuite("|json filter", {
     expected: "A string with\\n\\t\\\"FUNKY CHARACTERS\\\"."
   }
 }).run_tests_on dust
+
+
+
+for i in [0...10]
+
+  new DustTestSuite("@random helper", {
+    "can generate random values 0/1 ##{i+1}":{
+      source:   '{@random}Value={.}{/random}'
+      context:  {}
+      expected: /^Value=(0|1)$/
+    }
+  }).run_tests_on dust
+
+  new DustTestSuite("@random helper", {
+    "can generate random values between 10 and 20 ##{i+1}":{
+      source:   '{@random min="10" max="20" set="val"/}Value={val}{@random min="0" max="9" set="val2"/};Value={val2}'
+      context:  {}
+      expected: /^Value=((10)|(11)|(12)|(13)|(14)|(15)|(16)|(17)|(18)|(19)|(20));Value=(0|1|2|3|4|5|6|7|8|9)$/
+    }
+  }).run_tests_on dust
+
+  new DustTestSuite("@random helper", {
+    "can generate random values between 1 and 5 with @if ##{i+1}":{
+      source:   '{@random min="1" max="5"}{@if value="{.}" is="1"}A{:else}{@if value="{.}" is="2"}B{:else}{@if value="{.}" is="3"}C{:else}{@if value="{.}" is="4"}D{:else}{@if value="{.}" is="5"}E{:else}XXXX{/if}{/if}{/if}{/if}{/if}{/random}'
+      context:  {}
+      expected: /^(A|B|C|D|E)$/
+    }
+  }).run_tests_on dust
 
 new DustTestSuite("@index helper", {
   'yields a one-based index value ({@index/} case)':{
@@ -170,7 +201,7 @@ new DustTestSuite("@deorphan helper", {
     expected: "The\tquick\nbrown\nfox jumped over the lazy&nbsp;dogs.\n"
   }
 }).run_tests_on dust
-  
+
 new DustTestSuite("@filter helper", {
   '@filter type=uc':{
     source:   'before|{@filter type="uc"}Foo Bar{/filter}|after',
