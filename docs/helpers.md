@@ -317,6 +317,26 @@ when evaluated.
 
 Also see the `@even`, `@first` and  `@last` helpers.
 
+## `@random`
+
+The "random" helper emits a random integer in the specified range.
+
+For example, the Dust.js code:
+
+    {@random min="1" max="100"}Your number is {.}.{/random}
+
+might generate:
+
+    You number is 67.
+
+(Or more generally, the value `67` will be any integer between `1` and `100`, inclusive, with a pseudo-random distribution.)
+
+The `random` helper accepts three parameters:
+
+ * `min` - the minimum value to generate (defaults to `0`)
+ * `max` - the minimum value to generate (defaults to `1`)
+ * `set` - when specified, the random value will be assigned to a context variable of the given name.
+
 ## `@regexp`
 
 The "regexp" helper can be used to extract the part of a string that matches a given regular expression.
