@@ -55,6 +55,8 @@ and then use the Dust.js instance (`dust`) as you normally would.
 
  * **@odd** - executes only for odd-valued (zero-based) indexes (e.g., `{#foo}{@odd}{.} is odd.{:else}{.} is even.{/odd}{/foo}`)
 
+ * **@random** - generates a random integer within the specified range (e.g., `{@random min="1" max="100"}Your number is {.}.{/random}`).
+
  * **@regexp** - extracts the matching component of a string, with optional ability to iterate over multiple matches (e.g., `{@regexp string="input" pattern="^(Reg)(Exp?)"}First Match was {$[1]}{:else}No Match{/regexp}`)
 
  * **@repeat** - repeat N times (e.g., `{@repeat times="3"}Well{@sep}, {/sep}{/repeat}`).
