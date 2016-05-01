@@ -65,6 +65,8 @@ and then use the Dust.js instance (`dust`) as you normally would.
 
  * **@titlecase** - converts text to title case (e.g., `{@titlecase}Foo{/titlecase}`)
 
+ * **@trim** - removes leading and trailing whitespace within the body of the tag (e.g., `{@trim}  Foo {bar}{~n}{/trim}`)
+
  * **@unless** - conditionally executes the body (e.g., `{@unless value=foo is="Bar"}Foo !== "Bar"{:else}Foo === "Bar"{/unless}`).
 
  * **@upcase** - converts text to upper case (e.g., `{@upcase}Foo{/upcase}`)

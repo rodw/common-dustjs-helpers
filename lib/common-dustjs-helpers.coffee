@@ -36,6 +36,7 @@ class CommonDustjsHelpers
     helpers['repeat']    = @repeat_helper
     helpers['sep']       = @classic_sep unless helpers['sep']? # restore default {@sep} if not found
     helpers['titlecase'] = helpers['Titlecase'] = @titlecase_helper
+    helpers['trim']      = @trim_helper
     helpers['unless']    = @unless_helper
     helpers['upcase']    = helpers['UPCASE']= @upcase_helper
     return helpers
@@ -74,6 +75,11 @@ class CommonDustjsHelpers
       return parseInt(val)
     else
       return null
+
+  trim_helper: (chunk,context,bodies,params)=>
+    return chunk.capture bodies.block, context, (data,chunk)->
+      chunk.write(data.trim())
+      chunk.end()
 
   random_helper: (chunk,context,bodies,params)=>
     if params?

@@ -86,6 +86,30 @@ for i in [0...10]
     }
   }).run_tests_on dust
 
+new DustTestSuite("@trim helper", {
+  'can trim leading and trailing spaces':{
+    source:   'BEFORE {@trim} within the helper {/trim} AFTER.'
+    context:  {}
+    expected:  'BEFORE within the helper AFTER.'
+  }
+}).run_tests_on dust
+
+new DustTestSuite("@trim helper", {
+  'can trim leading and trailing spaces within values':{
+    source:   'BEFORE {@trim}{text} {/trim} AFTER.'
+    context:  { text:" within the helper "},
+    expected:  'BEFORE within the helper AFTER.'
+  }
+}).run_tests_on dust
+
+new DustTestSuite("@trim helper", {
+  'can trim leading and trailing newlines and tabs within values':{
+    source:   "BEFORE {@trim}\t\n{text}\n\t{/trim} AFTER."
+    context:  { text:"\n\twithin the helper\t "},
+    expected:  'BEFORE within the helper AFTER.'
+  }
+}).run_tests_on dust
+
 new DustTestSuite("@index helper", {
   'yields a one-based index value ({@index/} case)':{
     source:   '{#foo}{.} is index number {@index/}{@sep}; {/sep}{/foo}.',
