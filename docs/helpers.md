@@ -140,17 +140,19 @@ Also see the `@last`, `@even` and  `@odd` helpers.
 
 ## `@idx`
 
-This helper restores the functionality of the `{@idx}` helper in the original dust.js.  (This helper was subsequently removed in later linkedin-dustjs releases.)
+This helper restores the functionality of the `{@idx}` helper in the original dust.js.  (This helper was subsequently removed in linkedin-dustjs..)
 
-Quoting the original dust.js documentation: The idx tag passes the numerical index of the current element to the enclosed block.
+Quoting [the original dust.js documentation](http://akdubya.github.io/dustjs/):
+
+> The idx tag passes the numerical index of the current element to the enclosed block.
 
     {#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}
 
-The template above might output something like:
+> The template above might output something like:
 
     Moe0, Larry1, Curly2
 
-Note that this helper will only be added if the `@idx` helper does not already exist.  If `@idx` is already found it will be left alone.
+Note that this helper will *only* be added if an `@idx` helper does not already exist.  If `@idx` is found Dust's list of helpers it will be left alone.
 
 Also see the `@sep` helper.
 
@@ -168,11 +170,11 @@ When the `value` parameter is used by itself, the `@if` helper will execute the 
  * a string starting with `T` or `Y` (case-insensitive)
  * the string `on` (case-insensitive)
  * a non-empty array or object (map).
- 
+
 For example:
 
     {@if value=foo}YES{:else}NO{/if}
-    
+
 will emit `YES` for the following contexts:
 
   * `{foo:true}`
@@ -186,7 +188,7 @@ will emit `YES` for the following contexts:
   * `{foo:function() { return true; }}`
   * `{foo:[1,2]}`
   * `{foo:{bar:"xyzzy"}}`
-  
+
 and `NO` for the following contexts:
 
   * `{foo:false}`
@@ -225,8 +227,8 @@ The `below` parameter will compare the value of `value` (a context variable or s
 
 ### `@if value=foo matches=bar`
 
-The `matches` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of regular expression specified in `matches` (a context variable or string, possibly including dust markup).  If matched, teh body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
-  
+The `matches` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of regular expression specified in `matches` (a context variable or string, possibly including dust markup).  If matched, the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
+
 ## `@index`
 
 When looping over an array, this helper emits the one-based index of the current element.
@@ -234,7 +236,7 @@ When looping over an array, this helper emits the one-based index of the current
 For example, given the context:
 
     { mylist: ["A","B","C"] }
-  
+
 The Dust.js snippet:
 
     {#mylist}{.} is {@index/}.{@sep} {/sep}{/mylist}
@@ -243,7 +245,7 @@ yields:
 
     A is 1. B is 2. C is 3.
 
-When a body is provided, `@index` sets the one-based index as the current context and evalutates the body as normal.
+When a body is provided, `@index` sets the one-based index as the current context and evaluates the body as normal.
 
 For example, the Dust.js snippet:
 
@@ -254,7 +256,7 @@ also yields:
     A is 1. B is 2. C is 3.
 
 Note that `{@index}{/index}` yields nothing. Only the `{@index/}` syntax emits the index value without the `{.}` tag.
-  
+
 ## `@last`
 
 The "last" helper will execute its body if the current element is the last element of a list, and its `else` body (if any) otherwise.
@@ -315,9 +317,76 @@ when evaluated.
 
 Also see the `@even`, `@first` and  `@last` helpers.
 
+## `@regexp`
+
+The "regexp" helper can be used to extract the part of a string that matches a given regular expression.
+
+For example, given the context:
+
+    {
+      "foo":"http://example.com/"
+    }
+
+the Dust.js snippet:
+
+    {@regexp string="{foo}" pattern="^(HTTPS?:)\/\/" flags="i"}
+      Protocol: {$[1]}
+    {/regexp}
+
+yields:
+
+    Protocol: http
+
+Similarly, given the context:
+
+    {
+      "foo":"The quick brown fox jumped over the lazy dogs."
+    }
+
+the Dust.js snippet:
+
+    {@regexp string="{foo}" pattern="^(Th[^\s]+).*(j.mp.d).*(o.e.)"}
+      First: {$[1]}
+      Second: {$[2]}
+      Third: {$[3]}
+    {/regexp}
+
+yields:
+
+    First: The
+    Second: jumped
+    Third: over
+
+The `regexp` helper accepts the following parameters:
+
+ * `string` - the text that the regular expression will be matched against.  This may be a literal string or an expression containing one or more dust variables.
+
+ * `pattern` - the regular expression that is used to perform the matching.  The contents of this parameter follow the regular JavaScript regular-expression syntax, save that the leading and trailing `/` characters are omitted.
+
+ * `flags` - this optional parameter may contain any combination of the characters `i`, `g` and `m`.  They specify flags that modify the regular expression (ignore-case, global and multi-line, respectively), as would typically appear after the final `/` in a JavaScript regular expression literal.  (For example, the regular expression `/([aeiou])/ig` is equivalent to `pattern="([aeiou])" flags="ig"`.
+
+ * `var` - this optional parameter specifies the context variable name used to access the numbered matches with the body of the `regexp` tag.  When omitted, the matching subexpressions will be accessed using the expression `{$[n]}` (where `n` is the index of the subexpression, as seen above).  When `var` is specified, the value of `var` is inserted between the `$` and `[`.  For example, given `var="foo"`, the first matching subexpression will be accessed via `{$foo[1]}`, the second via `{$foo[2]}` and so on.   (This is helpful as a way to disambiguate variables when `regexp` tags are nested.)
+
+If the regular expression matches the specified string, the body of the `regexp` tag will be evaluated.  When the regular expression does not match the specified string, the `{:else}` block of the `regexp` tag (if any) will be executed.
+
+If the "global" flag (`g`) is set, the tag pair `{#$}` `{/$}` (or `{#$<var>}` `{/$<var>}` when `var` is set) can be used to iterate over multiple matches.
+
+For example, the Dust snippet:
+
+    {@regexp string="The quick brown fox jumped."
+             pattern="([aeiou])" flags="ig" var="M"}
+      Vowels: {#$M}{.}{@sep}, {/sep}{/$M}
+    {:else}
+      No vowels found.
+    {/regexp}
+
+will evaluate to:
+
+    Vowels: e, u, i, o, o, u, e
+
 ## `@repeat`
 
-The "repeat" helper will execute its body `times` times (as if a list of `times` bodies were passed to a section block.
+The "repeat" helper will execute its body `times` times (as if a list of `times` bodies were passed to a section block).
 
 For example the Dust.js snippet:
 
@@ -340,7 +409,7 @@ Each time the zero-based numeric index is passed as the `{.}` context.  E.g., th
 
 will resolve to:
 
-    0,1,2,3
+    0, 1, 2, 3
 
 Note that the `times` parameter can be a context variable or literal numeric string.
 

@@ -7,7 +7,14 @@ NPM_EXE ?= npm
 PACKAGE_JSON ?= package.json
 NODE_MODULES ?= node_modules
 MODULE_DIR ?= module
-TEST_MODULE_DIR ?= ../test-module-install
+NPM_ARGS ?= --silent
+
+# PACKAGING ####################################################################
+PACKAGE_VERSION ?= $(shell $(NODE_EXE) -e "console.log(require('./$(PACKAGE_JSON)').version)")
+PACKAGE_NAME ?= $(shell $(NODE_EXE) -e "console.log(require('./$(PACKAGE_JSON)').name)")
+TMP_PACKAGE_DIR ?= packaging-$(PACKAGE_NAME)-$(PACKAGE_VERSION)-tmp
+PACKAGE_DIR ?= $(PACKAGE_NAME)-v$(PACKAGE_VERSION)
+TEST_MODULE_DIR ?= ../testing-module-install
 
 ### JS/COFFEE ##################################################################
 COFFEE_EXE ?= ./node_modules/.bin/coffee
@@ -35,7 +42,7 @@ MOCHA_COV_ARGS  ?= -R html-cov --compilers coffee:coffee-script/register --globa
 
 ### MARKDOWN ###################################################################
 MARKDOWN_EXE ?= ./node_modules/.bin/marked
-MARKDOWN_SRCS ?= $(shell find . -type f -name '*.md' | grep -v node_modules | grep -v module)
+MARKDOWN_SRCS ?= $(shell find . -type f -name '*.md' | grep -v node_modules | grep -v module | grep -v common-dustjs-helpers-v.*)
 MARKDOWN_HTML ?= ${MARKDOWN_SRCS:.md=.html}
 # LITCOFFEE_SRCS ?= $(shell find . -type f -name '*.litcoffee' | grep -v node_modules | grep -v module)
 # LITCOFFEE_HTML ?= ${LITCOFFEE_SRCS:.litcoffee=.html}
@@ -72,10 +79,12 @@ module: test coverage docs
 	cp LICENSE $(MODULE_DIR)
 	cp -r lib $(MODULE_DIR)
 	cp $(PACKAGE_JSON) $(MODULE_DIR)
+	mv module $(PACKAGE_DIR)
+	tar -czf $(PACKAGE_DIR).tgz $(PACKAGE_DIR)
 test-module-install: clean-test-module-install module
 	mkdir -p ${TEST_MODULE_DIR}
 	cd ${TEST_MODULE_DIR}
-	npm install "$(CURDIR)/${MODULE_DIR}"
+	npm install "$(CURDIR)/$(PACKAGE_DIR).tgz"
 	node -e "require('assert').ok(require('common-dustjs-helpers').CommonDustjsHelpers !== null);" && echo "It worked!" && cd $(CURDIR) && rm -rf ${TEST_MODULE_DIR}
 $(NODE_MODULES): $(PACKAGE_JSON)
 	$(NPM_EXE) prune
@@ -86,8 +95,11 @@ install: $(NODE_MODULES) # an alias
 clean-node-modules:; $(NPM_EXE) prune
 really-clean-node-modules:; rm -rf $(NODE_MODULES)
 clean-test-module-install:; rm -rf ${TEST_MODULE_DIR}
-clean-module:; rm -rf ${MODULE_DIR}
-publish: module test-module-install; $(NPM_EXE) publish $(MODULE_DIR)
+clean-module:
+	rm -rf ${MODULE_DIR}
+	rm -rf $(PACKAGE_DIR)
+	rm -rf $(PACKAGE_DIR).tgz
+publish: module test-module-install; $(NPM_EXE) publish $(PACKAGE_DIR).tgz
 
 ### MOCHA ######################################################################
 test: test-mocha
