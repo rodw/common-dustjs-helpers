@@ -168,11 +168,11 @@ When the `value` parameter is used by itself, the `@if` helper will execute the 
  * a string starting with `T` or `Y` (case-insensitive)
  * the string `on` (case-insensitive)
  * a non-empty array or object (map).
- 
+
 For example:
 
     {@if value=foo}YES{:else}NO{/if}
-    
+
 will emit `YES` for the following contexts:
 
   * `{foo:true}`
@@ -186,7 +186,7 @@ will emit `YES` for the following contexts:
   * `{foo:function() { return true; }}`
   * `{foo:[1,2]}`
   * `{foo:{bar:"xyzzy"}}`
-  
+
 and `NO` for the following contexts:
 
   * `{foo:false}`
@@ -225,8 +225,8 @@ The `below` parameter will compare the value of `value` (a context variable or s
 
 ### `@if value=foo matches=bar`
 
-The `matches` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of regular expression specified in `matches` (a context variable or string, possibly including dust markup).  If matched, teh body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
-  
+The `matches` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of regular expression specified in `matches` (a context variable or string, possibly including dust markup).  If matched, the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
+
 ## `@index`
 
 When looping over an array, this helper emits the one-based index of the current element.
@@ -234,7 +234,7 @@ When looping over an array, this helper emits the one-based index of the current
 For example, given the context:
 
     { mylist: ["A","B","C"] }
-  
+
 The Dust.js snippet:
 
     {#mylist}{.} is {@index/}.{@sep} {/sep}{/mylist}
@@ -243,7 +243,7 @@ yields:
 
     A is 1. B is 2. C is 3.
 
-When a body is provided, `@index` sets the one-based index as the current context and evalutates the body as normal.
+When a body is provided, `@index` sets the one-based index as the current context and evaluates the body as normal.
 
 For example, the Dust.js snippet:
 
@@ -254,7 +254,7 @@ also yields:
     A is 1. B is 2. C is 3.
 
 Note that `{@index}{/index}` yields nothing. Only the `{@index/}` syntax emits the index value without the `{.}` tag.
-  
+
 ## `@last`
 
 The "last" helper will execute its body if the current element is the last element of a list, and its `else` body (if any) otherwise.
@@ -315,9 +315,15 @@ when evaluated.
 
 Also see the `@even`, `@first` and  `@last` helpers.
 
+## `@regexp`
+
+Extracts the matching component of a string, with optional ability to iterate over multiple matches (e.g., `{@regexp string="input" pattern="^(Reg)(Exp?)"}First Match was {$[1]}{/regexp}')
+
+*TODO document me in more detail.*
+
 ## `@repeat`
 
-The "repeat" helper will execute its body `times` times (as if a list of `times` bodies were passed to a section block.
+The "repeat" helper will execute its body `times` times (as if a list of `times` bodies were passed to a section block).
 
 For example the Dust.js snippet:
 

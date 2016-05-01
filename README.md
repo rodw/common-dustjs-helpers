@@ -4,9 +4,9 @@
 
 `common-dustjs-helpers` is an [npm](https://npmjs.org/) module that offers a small library of helper functions for the [Dust.js](http://akdubya.github.io/dustjs/) web-templating framework (and the [LinkedIn fork of Dust.js](https://github.com/linkedin/dustjs)).  This library is largely complementary to [LinkedIn's dustjs-helpers](https://github.com/linkedin/dustjs-helpers) library.
 
-The philosophy behind `common-dustjs-helpers` is the same as that behind dust.js itself--namely that templates should contain presentation-level logic, free from side effects (and hence composable and capable of running in parellel).  In particular, you will not find helper functions that allow you to execute arbitrary JavaScript.
+The philosophy behind `common-dustjs-helpers` is the same as that behind dust.js itself--namely that templates should contain presentation-level logic, free from side effects (and hence composable and capable of running in parallel).  In particular, you will not find helper functions that allow you to execute arbitrary JavaScript.
 
-NOTE: This repository follows the [git flow](https://github.com/nvie/gitflow) branching model.  The latest stable (released) version of the code should be found in the `master` branch.  (Individual releases will be tagged in that branch.) The latest unstable (un-released) version of the code should be found in the `develop` branch.  
+NOTE: This repository follows the [git flow](https://github.com/nvie/gitflow) branching model.  The latest stable (released) version of the code should be found in the `master` branch.  (Individual releases will be tagged in that branch.) The latest unstable (un-released) version of the code should be found in the `develop` branch.
 
 ## Installing
 
@@ -34,14 +34,14 @@ and then use the Dust.js instance (`dust`) as you normally would.
 ## The Helpers
 
  * **@count** - emits the size of an array or similiar container (e.g., `{@count of=foo/}`).
- 
+
  * **@deorphan** - replaces whitespace between the last two "words" of the body to `&nbsp;` (e.g., `{@deorphan}Foo bar.{/deorphan}` becomes `Foo&nbsp;bar.`).
- 
+
  * **@downcase** - converts text to lower case (e.g., `{@downcase}Foo{/downcase}`).
- 
+
  * **@even** - executes only for even-valued (zero-based) indexes (e.g., `{#foo}{@even}{.} is even.{:else}{.} is odd.{/even}{/foo}`).
 
- * **@filter** - applies a strandard dust `|x` filter to the tag body (e.g., `{@filter type="uc"}Foo {bar} xyzzy.{/filter}`).
+ * **@filter** - applies a standard dust `|x` filter to the tag body (e.g., `{@filter type="uc"}Foo {bar} xyzzy.{/filter}`).
 
  * **@first** - executes only for the first element in a list (e.g., `{#foo}{@first}{.} is first.{:else}{.} is not first.{/first}{/foo}`).
 
@@ -55,14 +55,16 @@ and then use the Dust.js instance (`dust`) as you normally would.
 
  * **@odd** - executes only for odd-valued (zero-based) indexes (e.g., `{#foo}{@odd}{.} is odd.{:else}{.} is even.{/odd}{/foo}`)
 
+ * **@regexp** - extracts the matching component of a string, with optional ability to iterate over multiple matches (e.g., `{@regexp string="input" pattern="^(Reg)(Exp?)"}First Match was {$[1]}{:else}No Match{/regexp}`)
+
  * **@repeat** - repeat N times (e.g., `{@repeat times="3"}Well{@sep}, {/sep}{/repeat}`).
- 
+
  * **@sep** - restores the original dust.js `sep` helper (e.g., `{#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}`)
 
  * **@titlecase** - converts text to title case (e.g., `{@titlecase}Foo{/titlecase}`)
- 
+
  * **@unless** - conditionally executes the body (e.g., `{@unless value=foo is="Bar"}Foo !== "Bar"{:else}Foo === "Bar"{/unless}`).
- 
+
  * **@upcase** - converts text to upper case (e.g., `{@upcase}Foo{/upcase}`)
 
 See [helpers.md](https://github.com/rodw/common-dustjs-helpers/blob/master/docs/helpers.md) for detailed documentation.
