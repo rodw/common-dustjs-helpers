@@ -655,3 +655,90 @@ new DustTestSuite("positional helpers",{
     expected: 'before|EVEN! one is not even. EVEN! three is not even. EVEN! |after'
   },
 }).run_tests_on dust
+
+
+new DustTestSuite("@elements helper", {
+  'can iterate over name/value pairs, sorted by name':{
+    source:   '{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        a:"one"
+        b:"two"
+        c:"three"
+      }
+    },
+    expected: "a=one\nb=two\nc=three"
+  }
+  'can iterate over name/object pairs':{
+    source:   '{@elements of="foo"}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        a:{x:"one",z:2}
+        b:{x:"two",z:5}
+        c:{x:"three",z:1}
+      }
+    },
+    expected: "a=one\nb=two\nc=three"
+  }
+  'can iterate over name/value pairs, sorted by name':{
+    source:   '{@elements of="foo" sort="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        b:"two"
+        a:"one"
+        c:"three"
+      }
+    },
+    expected: "a=one\nb=two\nc=three"
+  }
+  'can iterate over name/object pairs, sorted by attribute':{
+    source:   '{@elements of="foo" sort="z"}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        a:{x:"one",z:2}
+        b:{x:"two",z:5}
+        c:{x:"three",z:1}
+      }
+    },
+    expected: "c=three\na=one\nb=two"
+  }
+  'can customize field names':{
+    source:   '{@elements of="foo" index="I" key="DAKEY" value="DAVALUE"}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        a:"one"
+        b:"two"
+        c:"three"
+      }
+    },
+    expected: "[0] a=one\n[1] b=two\n[2] c=three"
+  }
+  'doesn\'t choke on null input':{
+    source:   'BEFORE|{@elements of="bar"}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}|AFTER',
+    context:  {
+      foo:{
+        a:"one"
+        b:"two"
+        c:"three"
+      }
+    },
+    expected: "BEFORE||AFTER"
+  }
+  'doesn\'t choke on empty input':{
+    source:   'BEFORE|{@elements of="foo"}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}|AFTER',
+    context:  {
+      foo:{
+      }
+    },
+    expected: "BEFORE||AFTER"
+  }
+  'doesn\'t choke on null values':{
+    source:   'BEFORE|{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{/elements}|AFTER',
+    context:  {
+      foo:{
+        bar:null
+      }
+    },
+    expected: "BEFORE|bar=|AFTER"
+  }
+}).run_tests_on dust

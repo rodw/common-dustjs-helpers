@@ -23,6 +23,7 @@ class CommonDustjsHelpers
     helpers['count']     = @count_helper
     helpers['deorphan']  = @deorphan_helper
     helpers['downcase']  = @downcase_helper
+    helpers['elements']  = @elements_helper
     helpers['even']      = @even_helper
     helpers['filter']    = @filter_helper
     helpers['first']     = @first_helper
@@ -84,6 +85,61 @@ class CommonDustjsHelpers
     return chunk.capture bodies.block, context, (data,chunk) ->
       chunk.write(data.toLowerCase())
       chunk.end()
+
+  elements_helper: (chunk,context,bodies,params)=>
+    obj = null
+    if params?['of']?
+      obj_name = @_eval_dust_string(params['of'], chunk, context)
+      obj = context.get(obj_name)
+    index_name = "$idx"
+    if params?['idx']? or params?['index']?
+      index_name = @_eval_dust_string(params['idx'] ? params['index'], chunk, context)
+    key_name = "$key"
+    if params?['key']?
+      key_name = @_eval_dust_string(params['key'], chunk, context)
+    value_name = "$value"
+    if params?['value']?
+      value_name = @_eval_dust_string(params['value'], chunk, context)
+    sort = null
+    if params?['sort']?
+      sort = @_eval_dust_string(params['sort'], chunk, context)
+      if /^(t(rue)?$)/i.test sort
+        sort = true
+      else if /^(f(alse)?$)/i.test sort
+        sort = null
+    if sort?
+      fold = null
+      if params?['fold']?
+        fold = @_eval_dust_string(params['fold'], chunk, context)
+        if /^(t(rue)?$)/i.test fold
+          fold = true
+        else
+          fold = false
+    if obj?
+      index = 0
+      pairs = []
+      for k,v of obj
+        pair = {key:k, value:v}
+        if typeof sort is 'string'
+          pair.sortkey = v?[sort] ? k
+        pairs.push pair
+      if sort?
+        if sort is true
+          comparator = @_attribute_comparator("key",fold)
+        else if typeof sort is 'string'
+          comparator = @_attribute_comparator("sortkey",fold)
+        pairs = pairs.sort(comparator)
+      for p in pairs
+        ctx = {}
+        ctx[index_name] = index
+        ctx[key_name] = p.key
+        ctx[value_name] = p.value
+        context = context.push(ctx)
+        context.stack.index = index
+        context.stack.of = pairs.length
+        chunk = bodies.block(chunk, context)
+        index++
+    return chunk
 
   # @even helper - evaluates the body iff the index of the current element is even (for zebra striping, for example)
   even_helper: (chunk,context,bodies,params)=>
@@ -346,6 +402,35 @@ class CommonDustjsHelpers
       substring = str
     return substring
 
+  # generates a comparator that compares two objects based on one of their attributes
+  # when `fold` is `true`, `a` will sort _before_ `B`
+  _attribute_comparator:(attr,fold=false)=>
+    (A,B)=>
+      a = A?[attr]
+      b = B?[attr]
+      return @_compare(a,b,fold)
+
+  _compare:(a,b,fold=false)=>
+    if a? and b?
+      A = a
+      B = b
+      if fold?
+        A = a.toUpperCase?() ? a
+        B = b.toUpperCase?() ? b
+      if A.localeCompare? and a.localeCompare?
+        val = A.localeCompare(B)
+        if val is 0 # if upper case version is tie, use lower case version
+          return a.localeCompare(b)
+        else
+          return val
+      else
+        return (if a > b then 1 else (if a < b then -1 else 0))
+    else if a? and not b?
+      return 1
+    else if b? and not a?
+      return -1
+    else
+      return 0
 
 # EXPORTS
 ###############################################################################
