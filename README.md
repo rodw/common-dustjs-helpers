@@ -63,6 +63,8 @@ and then use the Dust.js instance (`dust`) as you normally would.
 
  * **@sep** - restores the original dust.js `sep` helper (e.g., `{#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}`)
 
+ * **@substring** - extracts a substring from an input parameter or the tag body (e.g., `{@substring of="{foo}" from="4" to="8"/}`)
+
  * **@titlecase** - converts text to title case (e.g., `{@titlecase}Foo{/titlecase}`)
 
  * **@trim** - removes leading and trailing whitespace within the body of the tag (e.g., `{@trim}  Foo {bar}{~n}{/trim}`)

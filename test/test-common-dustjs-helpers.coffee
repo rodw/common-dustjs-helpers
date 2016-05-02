@@ -102,6 +102,106 @@ new DustTestSuite("@trim helper", {
   }
 }).run_tests_on dust
 
+new DustTestSuite("@substring helper", {
+  'can extract substrings from parameter (with from and to)':{
+    source:   'BEFORE {@substring of="The quick brown fox jumped." from="4" to="8"/} AFTER.'
+    context:  {}
+    expected: 'BEFORE quic AFTER.'
+  },
+  'can extract substrings from parameter (with from, no to)':{
+    source:   'BEFORE {@substring of="The quick brown fox jumped." from="7"/} AFTER.'
+    context:  {}
+    expected: 'BEFORE ck brown fox jumped. AFTER.'
+  },
+  'can extract substrings from parameter (no from, with to)':{
+    source:   'BEFORE {@substring of="The quick brown fox jumped." to="17"/} AFTER.'
+    context:  {}
+    expected: 'BEFORE The quick brown f AFTER.'
+  },
+  'can extract substrings from parameter (negative from, negative to)':{
+    source:   'BEFORE {@substring of="The quick brown fox jumped." from="-10" to="-3"/} AFTER.'
+    context:  {}
+    expected: 'BEFORE ox jump AFTER.'
+  },
+  'can extract substrings from parameter (negative from, no to)':{
+    source:   'BEFORE {@substring of="The quick brown fox jumped." from="-11"/} AFTER.'
+    context:  {}
+    expected: 'BEFORE fox jumped. AFTER.'
+  },
+  'can extract substrings from parameter (no from, negative to)':{
+    source:   'BEFORE {@substring of="The quick brown fox jumped." to="-10"/} AFTER.'
+    context:  {}
+    expected: 'BEFORE The quick brown f AFTER.'
+  },
+  'can extract substrings from parameter with variable (with from and to)':{
+    source:   'BEFORE {@substring of="The {adj} {animal} jumped." from="4" to="8"/} AFTER.'
+    context:  {animal:"fox",adj:"quick brown"}
+    expected: 'BEFORE quic AFTER.'
+  },
+  #
+  'can extract substrings from body (with from and to)':{
+    source:   'BEFORE {@substring from="4" to="8"}The quick brown fox jumped.{/substring} AFTER.'
+    context:  {}
+    expected: 'BEFORE quic AFTER.'
+  },
+  'can extract substrings from body (with from, no to)':{
+    source:   'BEFORE {@substring from="7"}The quick brown fox jumped.{/substring} AFTER.'
+    context:  {}
+    expected: 'BEFORE ck brown fox jumped. AFTER.'
+  },
+  'can extract substrings from body (no from, with to)':{
+    source:   'BEFORE {@substring to="17"}The quick brown fox jumped.{/substring} AFTER.'
+    context:  {}
+    expected: 'BEFORE The quick brown f AFTER.'
+  },
+  'can extract substrings from body (negative from, negative to)':{
+    source:   'BEFORE {@substring from="-10" to="-3"}The quick brown fox jumped.{/substring} AFTER.'
+    context:  {}
+    expected: 'BEFORE ox jump AFTER.'
+  },
+  'can extract substrings from body (negative from, no to)':{
+    source:   'BEFORE {@substring from="-11"}The quick brown fox jumped.{/substring} AFTER.'
+    context:  {}
+    expected: 'BEFORE fox jumped. AFTER.'
+  },
+  'can extract substrings from body (no from, negative to)':{
+    source:   'BEFORE {@substring to="-10"}The quick brown fox jumped.{/substring} AFTER.'
+    context:  {}
+    expected: 'BEFORE The quick brown f AFTER.'
+  },
+  #
+  'can extract substrings from body containing variable (with from and to)':{
+    source:   'BEFORE {@substring from="4" to="8"}The {adj} {animal} jumped.{/substring} AFTER.'
+    context:  {animal:"fox",adj:"quick brown"}
+    expected: 'BEFORE quic AFTER.'
+  },
+  'can extract substrings from body containing variable (with from, no to)':{
+    source:   'BEFORE {@substring from="7"}The {adj} {animal} jumped.{/substring} AFTER.'
+    context:  {animal:"fox",adj:"quick brown"}
+    expected: 'BEFORE ck brown fox jumped. AFTER.'
+  },
+  'can extract substrings from body containing variable (no from, with to)':{
+    source:   'BEFORE {@substring to="17"}The {adj} {animal} jumped.{/substring} AFTER.'
+    context:  {animal:"fox",adj:"quick brown"}
+    expected: 'BEFORE The quick brown f AFTER.'
+  },
+  'can extract substrings from body containing variable (negative from, negative to)':{
+    source:   'BEFORE {@substring from="-10" to="-3"}The {adj} {animal} jumped.{/substring} AFTER.'
+    context:  {animal:"fox",adj:"quick brown"}
+    expected: 'BEFORE ox jump AFTER.'
+  },
+  'can extract substrings from body containing variable (negative from, no to)':{
+    source:   'BEFORE {@substring from="-11"}The {adj} {animal} jumped.{/substring} AFTER.'
+    context:  {animal:"fox",adj:"quick brown"}
+    expected: 'BEFORE fox jumped. AFTER.'
+  },
+  'can extract substrings from body containing variable (no from, negative to)':{
+    source:   'BEFORE {@substring to="-10"}The {adj} {animal} jumped.{/substring} AFTER.'
+    context:  {animal:"fox",adj:"quick brown"}
+    expected: 'BEFORE The quick brown f AFTER.'
+  }
+}).run_tests_on dust
+
 new DustTestSuite("@trim helper", {
   'can trim leading and trailing newlines and tabs within values':{
     source:   "BEFORE {@trim}\t\n{text}\n\t{/trim} AFTER."

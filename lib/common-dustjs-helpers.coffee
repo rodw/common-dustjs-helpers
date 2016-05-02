@@ -35,6 +35,7 @@ class CommonDustjsHelpers
     helpers['regexp']    = @regexp_helper
     helpers['repeat']    = @repeat_helper
     helpers['sep']       = @classic_sep unless helpers['sep']? # restore default {@sep} if not found
+    helpers['substring'] = @substring_helper
     helpers['titlecase'] = helpers['Titlecase'] = @titlecase_helper
     helpers['trim']      = @trim_helper
     helpers['unless']    = @unless_helper
@@ -71,7 +72,7 @@ class CommonDustjsHelpers
 
   # if `val` is a simple integer, return it as an integer, otherwise return null
   _to_int: (val)=>
-    if /^[0-9]+/.test val
+    if /^-?[0-9]+/.test val
       return parseInt(val)
     else
       return null
@@ -298,6 +299,40 @@ class CommonDustjsHelpers
       ctx = {}
       ctx[match] = string.match pattern
       return @_render_if_else ctx[match]?, chunk, context.push(ctx), bodies, params
+
+  substring_helper: (chunk,context,bodies,params)=>
+    if params?
+      if params["of"]? or params.string? or params.str? or params.value? or params.val?
+        str = @_eval_dust_string (params["of"] ? params.string ? params.str ? params.value ? params.val), chunk, context
+      if params.from? and @_to_int(params.from)?
+        from_index = @_to_int(params.from)
+      if params.to? and @_to_int(params.to)?
+        to_index = @_to_int(params.to)
+    if str?
+      chunk.write(@_get_substring(str,from_index,to_index))
+      return chunk
+    else
+      return chunk.capture bodies.block, context, (data,chunk)=>
+        chunk.write(@_get_substring(data,from_index,to_index))
+        chunk.end()
+
+  _get_substring:(str, from_index, to_index)=>
+    substring = null
+    if from_index? and from_index < 0
+      from_index = str.length + from_index
+    if to_index? and to_index < 0
+      to_index = str.length + to_index
+    if from_index? and to_index? and from_index > to_index
+      [from_index,to_index] = [to_index,from_index]
+    if from_index? and not to_index?
+      substring = str.substring(from_index)
+    else if to_index? and not from_index?
+      substring = str.substring(0,to_index)
+    else if from_index? and to_index?
+      substring = str.substring(from_index,to_index)
+    else
+      substring = str
+    return substring
 
 exports = exports ? this
 exports.CommonDustjsHelpers = CommonDustjsHelpers
