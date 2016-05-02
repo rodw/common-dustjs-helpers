@@ -39,6 +39,8 @@ and then use the Dust.js instance (`dust`) as you normally would.
 
  * **@downcase** - converts text to lower case (e.g., `{@downcase}Foo{/downcase}`).
 
+ * **@elements** - iterates over the key-value pairs in a map (e.g., `{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{/elements}`).
+
  * **@even** - executes only for even-valued (zero-based) indexes (e.g., `{#foo}{@even}{.} is even.{:else}{.} is odd.{/even}{/foo}`).
 
  * **@filter** - applies a standard dust `|x` filter to the tag body (e.g., `{@filter type="uc"}Foo {bar} xyzzy.{/filter}`).
