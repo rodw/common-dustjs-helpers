@@ -148,7 +148,7 @@ Quoting [the original dust.js documentation](http://akdubya.github.io/dustjs/):
 
     {#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}
 
-> The template above might output something like:
+The template above might output something like:
 
     Moe0, Larry1, Curly2
 
@@ -437,7 +437,9 @@ Note that the `times` parameter can be a context variable or literal numeric str
 
 This helper restores the functionality of the `{@sep}` helper in the original dust.js.  (This helper was subsequently removed in later linkedin-dustjs releases.)
 
-Quoting the original dust.js documentation: The sep tag prints the enclosed block for every value except for the last. [...]
+Quoting the original dust.js documentation:
+
+> The sep tag prints the enclosed block for every value except for the last. [...]
 
     {#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}
 
@@ -448,6 +450,64 @@ The template above might output something like:
 Note that this helper will only be added if the `@sep` helper does not already exist.  If `@sep` is already found it will be left alone.
 
 Also see the `@idx` helper.
+
+## `@substring`
+
+The "substring" helper extracts a substring from the specified parameter or the tag body.
+
+For example, given the context:
+
+    {
+      "foo":"The quick brown fox jumped over the lazy dogs."
+    }
+
+the Dust.js snippet:
+
+    {@substring of="{foo}" from="4" to="15"/}
+
+and the Dust.js snippet:
+
+    {@substring from="4" to="15"}{foo}{/substring}
+
+both yield:
+
+    quick brown
+
+The `substring` helper accepts the following parameters:
+
+ * `of` - the string from which to take the substring. Any Dust.js tags within this value will be evaluated as they normally would.  When `of` is missing, the body of the `substring` tag is used.
+
+ * `from` - the (zero-based) index of the first character of the string to include in the output.  This value must be an integer. When missing, defaults to `0`.  When negative, the characters are counted from the end of the string.  That is, a value of `from="-3"` is equivalent to `from="<string.length>-3"`.
+
+ * `to` - the (zero-based) index one larger than the last character of the string to include in the output.  (That is, the substring will be the range of characters at position `i` where `from <= i < to`.) This value must be an integer. When missing, defaults to the length of the string.  When negative, the characters are counted from the end of the string.  That is, a value of `to="-3"` is equivalent to `to="<string.length>-3"`.
+
+
+Note that `from` and `to` can contain Dust.js variables, which will be evaluated before the paremeter value is read.
+
+If `from` and `to` are out of sequence (that is, `from > to`), they will be automatically swapped.
+
+If `from` or `to` contains a non-integer value, it will be ignored (as if it was not set at all).
+
+Here are a few more examples that illustrate the logic specified above:
+
+    With "of", "from" and "to": |{@substring of="{foo}" from="0" to="5"/}|
+    With "of" and "to": |{@substring of="{foo}" to="5"/}|
+    With "of", "from" and "to": |{@substring of="{foo}" from="32" to="46"/}|
+    With "of" and "from": |{@substring of="{foo}" from="32"/}|
+    With negative "from": |{@substring of="{foo}" from="-14"/}|
+    With negative "from" and "to": |{@substring of="{foo}" from="-14" to="-6"/}|
+    With "of" and "to": |{@substring of="{foo}" to="7"/}|
+    With "from" and "to": |{@substring from="0" to="5"}{foo}{/substring}|
+
+yields:
+
+    With "of", "from" and "to": |The q|
+    With "of" and "to": |The q|
+    With "of", "from" and "to": |the lazy dogs.|
+    With "of" and "from": |the lazy dogs.|
+    With negative "from": |the lazy dogs.|
+    With negative "from" and "to": |the lazy|
+    With "from" and "to": |The q|
 
 ## `@titlecase`
 

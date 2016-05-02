@@ -1,7 +1,7 @@
 {
   "name":         "common-dustjs-helpers",
   "description":  "A small library of \"standard\" helper functions for the Dust.js web templating framework.",
-  "version":      "1.2.0",
+  "version":      "1.3.0",
   "keywords":     [ "dust", "dust.js", "linkedin", "helper", "web", "template" ],
   "license":      "MIT",
   "author":       "Rod Waldhoff <the-letter-r-followed-by-my-last-name@gmail.com> http://heyrod.com/",
@@ -11,7 +11,7 @@
   "bugs":         { "url":"http://github.com/rodw/common-dustjs-helpers/issues" },
   "main":         "lib/index.js",
   "scripts":      { "test": "make test" },
-  "directories":  { "lib":"lib", "doc":"docs" },
+  "directories":  { "lib":"lib" },
   "devDependencies" : {
     "coffee-script"   : "latest",
     "docco"           : "latest",
