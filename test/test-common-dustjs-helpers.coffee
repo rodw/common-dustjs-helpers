@@ -79,12 +79,28 @@ for i in [0...10]
   }).run_tests_on dust
 
   new DustTestSuite("@random helper", {
+    "can generate random values between 20 and 10 (reversing range automatically) ##{i+1}":{
+      source:   '{@random min="20" max="10" set="val"/}Value={val}'
+      context:  {}
+      expected: /^Value=((10)|(11)|(12)|(13)|(14)|(15)|(16)|(17)|(18)|(19)|(20))$/
+    }
+  }).run_tests_on dust
+
+  new DustTestSuite("@random helper", {
     "can generate random values between 1 and 5 with @if ##{i+1}":{
       source:   '{@random min="1" max="5"}{@if value="{.}" is="1"}A{:else}{@if value="{.}" is="2"}B{:else}{@if value="{.}" is="3"}C{:else}{@if value="{.}" is="4"}D{:else}{@if value="{.}" is="5"}E{:else}XXXX{/if}{/if}{/if}{/if}{/if}{/random}'
       context:  {}
       expected: /^(A|B|C|D|E)$/
     }
   }).run_tests_on dust
+
+new DustTestSuite("@random helper", {
+  "doesn't choke on an empty range":{
+    source:   '{@random min="4" max="4" set="val"/}Value={val}'
+    context:  {}
+    expected: /^Value=4$/
+  }
+}).run_tests_on dust
 
 new DustTestSuite("@trim helper", {
   'can trim leading and trailing spaces':{
@@ -294,6 +310,11 @@ new DustTestSuite("@regexp helper", {
     context:  {key:'ALFA-4',f:"i"},
     expected: "hTTps://acmewidgetcorp.atlassian.net/ALFA-4"
   }
+  'doesn\'t choke on undefined':{
+    source:   'BEFORE|{@regexp}TRUE{:else}FALSE{/regexp}|AFTER',
+    context:  {},
+    expected: "BEFORE|FALSE|AFTER"
+  }
 }).run_tests_on dust
 
 new DustTestSuite("@deorphan helper", {
@@ -353,6 +374,41 @@ new DustTestSuite("@if helper",{
     context:  { x: "Y" },
     expected: 'before|YES|after'
   }
+  '@if value="1"':{
+    source:   'before|{@if value="1"}YES{:else}NO{/if}|after',
+    context:  { },
+    expected: 'before|YES|after'
+  }
+  '@if value="0"':{
+    source:   'before|{@if value="0"}YES{:else}NO{/if}|after',
+    context:  { },
+    expected: 'before|NO|after'
+  }
+  '@if value="-1"':{
+    source:   'before|{@if value="-1"}YES{:else}NO{/if}|after',
+    context:  { },
+    expected: 'before|NO|after'
+  }
+  '@if value="000001}"':{
+    source:   'before|{@if value="000001"}YES{:else}NO{/if}|after',
+    context:  {},
+    expected: 'before|YES|after'
+  }
+  '@if value="{1}"':{
+    source:   'before|{@if value="{x}"}YES{:else}NO{/if}|after',
+    context:  { x:"1"},
+    expected: 'before|YES|after'
+  }
+  '@if value="{0}"':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x:"0"},
+    expected: 'before|NO|after'
+  }
+  '@if value="{-1}"':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x:"-1"},
+    expected: 'before|NO|after'
+  }
   '@if value=0':{
     source:   'before|{@if value=x}YES{:else}NO{/if}|after',
     context:  { x: 0 },
@@ -377,6 +433,11 @@ new DustTestSuite("@if helper",{
     source:   'before|{@if value=x}YES{:else}NO{/if}|after',
     context:  { x: [] },
     expected: 'before|NO|after'
+  }
+  '@if value=[1,2,3]':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: [1,2,3] },
+    expected: 'before|YES|after'
   }
   '@if value={}':{
     source:   'before|{@if value=x}YES{:else}NO{/if}|after',
@@ -425,6 +486,16 @@ new DustTestSuite("@if helper",{
   }
   '@if value="false"':{
     source:   'before|{@if value="false"}YES{:else}NO{/if}|after',
+    expected: 'before|NO|after'
+  }
+  '@if test=true':{
+    source:   'before|{@if test=x}YES{:else}NO{/if}|after',
+    context:  { x: true },
+    expected: 'before|YES|after'
+  }
+  '@if test=false':{
+    source:   'before|{@if test=x}YES{:else}NO{/if}|after',
+    context:  { x: false },
     expected: 'before|NO|after'
   }
   '@if value=X matches="Y" (true case)':{
@@ -487,6 +558,27 @@ new DustTestSuite("@if helper",{
     context:  { x: [1,2,3], y:3 },
     expected: 'before|NO|after'
   }
+  '@if count_of=X below=Y (false case)':{
+    source:   'before|{@if count_of=x below=y}YES{:else}NO{/if}|after',
+    context:  { x: [1,2,3], y:2 },
+    expected: 'before|NO|after'
+  }
+  '@if count_of=X below="Y" (false case)':{
+    source:   'before|{@if count_of=x below="2"}YES{:else}NO{/if}|after',
+    context:  { x: [1,2,3], y:2 },
+    expected: 'before|NO|after'
+  }
+  '@if count_of=X below=Y (true case)':{
+    source:   'before|{@if count_of=x below=y}YES{:else}NO{/if}|after',
+    context:  { x: [1,2,3], y:4 },
+    expected: 'before|YES|after'
+  }
+  '@if count_of=X below="Y" (true case)':{
+    source:   'before|{@if count_of=x below="4"}YES{:else}NO{/if}|after',
+    context:  { x: [1,2,3], y:4 },
+    expected: 'before|YES|after'
+  }
+
 }).run_tests_on dust
 
 new DustTestSuite("@unless helper",{
@@ -634,32 +726,79 @@ new DustTestSuite("@count helper",{
 
 # @first, @last, @even, @odd
 new DustTestSuite("positional helpers",{
+  '@idx':{
+    source:   'before|{#list}{@idx}{.}{/idx}. {.}{@sep}, {/sep}{/list}|after',
+    context:  { list: ['one','two','three','four','five'] },
+    expected: 'before|0. one, 1. two, 2. three, 3. four, 4. five|after'
+  },
   '@first':{
     source:   'before|{#list}{@first}FIRST!{:else} {.} is not first.{/first}{/list}|after',
     context:  { list: ['one','two','three','four','five'] },
     expected: 'before|FIRST! two is not first. three is not first. four is not first. five is not first.|after'
+  },
+  '@first does nothing when not in a list':{
+    source:   'before|{@first}FIRST!{:else}NOT FIRST!{/first}|after',
+    context:  { },
+    expected: 'before||after'
   },
   '@last':{
     source:   'before|{#list}{@last}LAST!{:else}{.} is not last. {/last}{/list}|after',
     context:  { list: ['one','two','three','four','five'] },
     expected: 'before|one is not last. two is not last. three is not last. four is not last. LAST!|after'
   },
+  '@last does nothing when not in a list':{
+    source:   'before|{@last}LAST!{:else}NOT LAST!{/last}|after',
+    context:  { },
+    expected: 'before||after'
+  },
   '@odd':{
     source:   'before|{#list}{@odd}ODD! {:else}{.} is not odd. {/odd}{/list}|after',
     context:  { list: ['zero','one','two','three','four'] },
     expected: 'before|zero is not odd. ODD! two is not odd. ODD! four is not odd. |after'
+  },
+  '@odd does nothing when not in a list':{
+    source:   'before|{@odd}ODD!{:else}NOT ODD!{/odd}|after',
+    context:  { },
+    expected: 'before||after'
   },
   '@even':{
     source:   'before|{#list}{@even}EVEN! {:else}{.} is not even. {/even}{/list}|after',
     context:  { list: ['zero','one','two','three','four'] },
     expected: 'before|EVEN! one is not even. EVEN! three is not even. EVEN! |after'
   },
+  '@even does nothing when not in a list':{
+    source:   'before|{@even}EVEN!{:else}NOT EVEN!{/even}|after',
+    context:  { },
+    expected: 'before||after'
+  }
 }).run_tests_on dust
 
 
 new DustTestSuite("@elements helper", {
-  'can iterate over name/value pairs, sorted by name':{
+  'can iterate over name/value pairs, sorted by name (of="string" case)':{
     source:   '{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        a:"one"
+        b:"two"
+        c:"three"
+      }
+    },
+    expected: "a=one\nb=two\nc=three"
+  }
+  'can iterate over name/value pairs, sorted by value':{
+    source:   '{@elements of="foo" sort=""}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        a:"one"
+        b:"two"
+        c:"three"
+      }
+    },
+    expected: "a=one\nc=three\nb=two"
+  }
+  'can iterate over name/value pairs, sorted by name (of=object case)':{
+    source:   '{@elements of=foo}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
     context:  {
       foo:{
         a:"one"
@@ -680,6 +819,17 @@ new DustTestSuite("@elements helper", {
     },
     expected: "a=one\nb=two\nc=three"
   }
+  'can iterate over name/object pairs (sort=false case)':{
+    source:   '{@elements of="foo" sort="false"}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        a:{x:"one",z:2}
+        b:{x:"two",z:5}
+        c:{x:"three",z:1}
+      }
+    },
+    expected: "a=one\nb=two\nc=three"
+  }
   'can iterate over name/value pairs, sorted by name':{
     source:   '{@elements of="foo" sort="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
     context:  {
@@ -691,6 +841,74 @@ new DustTestSuite("@elements helper", {
     },
     expected: "a=one\nb=two\nc=three"
   }
+  'can iterate over name/value pairs, sorted by name, descending':{
+    source:   '{@elements of="foo" sort="true" dir="desc"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        b:"two"
+        a:"one"
+        c:"three"
+      }
+    },
+    expected: "c=three\nb=two\na=one"
+  }
+  'can iterate over name/value pairs, sorted by name, default ordering (ABCabc)':{
+    source:   '{@elements of="foo" sort="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        C:"THREE"
+        A:"ONE"
+        b:"two"
+        a:"one"
+        B:"TWO"
+        c:"three"
+      }
+    },
+    expected: "A=ONE\nB=TWO\nC=THREE\na=one\nb=two\nc=three"
+  }
+  'can iterate over name/value pairs, sorted by name, default ordering (ABCabc), explict fold=false':{
+    source:   '{@elements of="foo" sort="true" fold="FALSE"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        C:"THREE"
+        A:"ONE"
+        b:"two"
+        a:"one"
+        B:"TWO"
+        c:"three"
+      }
+    },
+    expected: "A=ONE\nB=TWO\nC=THREE\na=one\nb=two\nc=three"
+  }
+  'can iterate over name/value pairs, sorted by name, folded ordering (AaBbCc)':{
+      source:   '{@elements of="foo" sort="true" fold="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+      context:  {
+        foo:{
+          C:"THREE"
+          A:"ONE"
+          b:"two"
+          a:"one"
+          B:"TWO"
+          c:"three"
+        }
+      },
+      expected: "A=ONE\na=one\nB=TWO\nb=two\nC=THREE\nc=three"
+    }
+  'can iterate over name/value pairs, sorted by name, folded ordering (AaBbCc), value from var':{
+      source:   '{@elements of="foo" sort="true" fold=should_fold}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+      context:  {
+        should_fold:true
+        foo:{
+          C:"THREE"
+          A:"ONE"
+          b:"two"
+          a:"one"
+          B:"TWO"
+          c:"three"
+        }
+      },
+      expected: "A=ONE\na=one\nB=TWO\nb=two\nC=THREE\nc=three"
+    }
   'can iterate over name/object pairs, sorted by attribute':{
     source:   '{@elements of="foo" sort="z"}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
     context:  {
@@ -731,6 +949,19 @@ new DustTestSuite("@elements helper", {
       }
     },
     expected: "BEFORE||AFTER"
+  }
+  'evaluates :else on empty input':{
+    source:   'BEFORE|{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{:else}EMPTY{/elements}|AFTER',
+    context:  {
+      foo:{ }
+    },
+    expected: "BEFORE|EMPTY|AFTER"
+  }
+  'evaluates :else on undefined empty input':{
+    source:   'BEFORE|{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{:else}EMPTY{/elements}|AFTER',
+    context:  {
+    },
+    expected: "BEFORE|EMPTY|AFTER"
   }
   'doesn\'t choke on null values':{
     source:   'BEFORE|{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{/elements}|AFTER',
