@@ -33,11 +33,13 @@ and then use the Dust.js instance (`dust`) as you normally would.
 
 ## The Helpers
 
- * **@count** - emits the size of an array or similiar container (e.g., `{@count of=foo/}`).
+ * **@count** - emits the size of an array or similar container (e.g., `{@count of=foo/}`).
 
  * **@deorphan** - replaces whitespace between the last two "words" of the body to `&nbsp;` (e.g., `{@deorphan}Foo bar.{/deorphan}` becomes `Foo&nbsp;bar.`).
 
  * **@downcase** - converts text to lower case (e.g., `{@downcase}Foo{/downcase}`).
+
+ * **@elements** - iterates over the key-value pairs in a map (e.g., `{@elements of=map}{$key}={$value}{@sep}{~n}{/sep}{/elements}`).
 
  * **@even** - executes only for even-valued (zero-based) indexes (e.g., `{#foo}{@even}{.} is even.{:else}{.} is odd.{/even}{/foo}`).
 

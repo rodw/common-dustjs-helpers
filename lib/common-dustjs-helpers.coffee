@@ -23,6 +23,7 @@ class CommonDustjsHelpers
     helpers['count']     = @count_helper
     helpers['deorphan']  = @deorphan_helper
     helpers['downcase']  = @downcase_helper
+    helpers['elements']  = @elements_helper
     helpers['even']      = @even_helper
     helpers['filter']    = @filter_helper
     helpers['first']     = @first_helper
@@ -47,6 +48,9 @@ class CommonDustjsHelpers
     filters['json'] = @json_filter
     return filters
 
+  # FILTER IMPLEMENTATIONS
+  #############################################################################
+
   json_filter: (value)->
     if typeof value in ['number','boolean']
       return "#{value}"
@@ -59,28 +63,156 @@ class CommonDustjsHelpers
     else
       return value
 
-  _eval_dust_string: ( str, chunk, context )->
-    if typeof str is "function"
-      if str.length is 0
-        str = str()
-      else
-        buf = ''
-        (chunk.tap (data) ->
-          buf += data; return '').render( str, context ).untap()
-        str = buf
-    return str
+  # HELPER IMPLEMENTATIONS
+  #############################################################################
 
-  # if `val` is a simple integer, return it as an integer, otherwise return null
-  _to_int: (val)=>
-    if /^-?[0-9]+/.test val
-      return parseInt(val)
-    else
-      return null
+  count_helper: (chunk,context,bodies,params)=>
+    value = @_eval_dust_string(params.of,chunk,context)
+    if value?.length?
+      chunk.write(value.length)
+    return chunk
 
-  trim_helper: (chunk,context,bodies,params)=>
-    return chunk.capture bodies.block, context, (data,chunk)->
-      chunk.write(data.trim())
+  deorphan_helper:(chunk,context,bodies,params)=>
+    return chunk.capture bodies.block, context, (data,chunk)=>
+      data = @_eval_dust_string(data,chunk,context)
+      match = data.match /^((.|\s)+[^\s]{1})\s+([^\s]+\s*)$/
+      if match? and match[1]? and match[2]?
+        data = "#{match[1]}&nbsp;#{match[3]}"
+      chunk.write(data)
       chunk.end()
+
+  downcase_helper: (chunk,context,bodies,params)=>
+    return chunk.capture bodies.block, context, (data,chunk) ->
+      chunk.write(data.toLowerCase())
+      chunk.end()
+
+  elements_helper: (chunk,context,bodies,params)=>
+    obj = null
+    if params?['of']?
+      if typeof params.of is 'string'
+        obj_name = @_eval_dust_string(params['of'], chunk, context)
+        obj = context.get(obj_name)
+      else
+        obj = params.of
+    index_name = "$idx"
+    if params?['idx']? or params?['index']?
+      index_name = @_eval_dust_string(params['idx'] ? params['index'], chunk, context)
+    key_name = "$key"
+    if params?['key']?
+      key_name = @_eval_dust_string(params['key'], chunk, context)
+    value_name = "$value"
+    if params?['value']?
+      value_name = @_eval_dust_string(params['value'], chunk, context)
+    sort = null
+    if params?['sort']?
+      sort = @_eval_dust_string(params['sort'], chunk, context)
+      if /^(t(rue)?$)/i.test sort
+        sort = true
+      else if /^(f(alse)?$)/i.test sort
+        sort = null
+    if sort?
+      fold = null
+      if params?['fold']?
+        fold = @_eval_dust_string(params['fold'], chunk, context)
+        if /^t(rue)?$/i.test fold
+          fold = true
+        else
+          fold = false
+    if sort?
+      reverse_sort = false
+      if params?['dir']?
+        dir = @_eval_dust_string(params['dir'], chunk, context)
+        if /^D((SC)|(ES(C(END(ING)?)?)?))?$/i.test dir
+          reverse_sort = true
+    pairs = []
+    if obj?
+      index = 0
+      for k,v of obj
+        pair = {key:k, value:v}
+        if typeof sort is 'string'
+          if sort is ""
+            pair.sortkey = v
+          else
+            pair.sortkey = v?[sort]
+
+        pairs.push pair
+      if sort?
+        if sort is true
+          comparator = @_attribute_comparator("key",fold,reverse_sort)
+        else if typeof sort is 'string'
+          comparator = @_attribute_comparator("sortkey",fold,reverse_sort)
+        pairs = pairs.sort(comparator)
+    if pairs.length > 0
+      for p in pairs
+        ctx = {}
+        ctx[index_name] = index
+        ctx[key_name] = p.key
+        ctx[value_name] = p.value
+        context = context.push(ctx)
+        context.stack.index = index
+        context.stack.of = pairs.length
+        chunk = bodies.block(chunk, context)
+        index++
+    else
+      if bodies.else?
+        chunk = chunk.render(bodies.else,context)
+    return chunk
+
+  # @even helper - evaluates the body iff the index of the current element is even (for zebra striping, for example)
+  even_helper: (chunk,context,bodies,params)=>
+    if context?.stack?.index?
+      c = (context.stack.index % 2 is 0)
+      return @_render_if_else(c, chunk, context, bodies, params)
+    else
+      return chunk
+
+  filter_helper: (chunk,context,bodies,params)=>
+    filter_type = @_eval_dust_string(params.type,chunk,context) if params?.type?
+    return chunk.capture bodies.block, context, (data,chunk)->
+      if filter_type?
+        data = CommonDustjsHelpers.dust.filters[filter_type](data)
+      chunk.write(data)
+      chunk.end()
+
+  # @first helper - evaluates the body iff the current element is the first in the list
+  first_helper: (chunk,context,bodies,params)=>
+    if context?.stack?.index?
+      c = (context.stack.index is 0)
+      return @_render_if_else(c, chunk, context, bodies, params)
+    return chunk
+
+  classic_idx: (chunk, context, bodies)->
+    return bodies.block(chunk, context.push(context.stack.index))
+
+  # {@if value=X matches=Y}
+  if_helper: (chunk,context,bodies,params)=>
+    execute_body = @_inner_if_helper(chunk,context,bodies,params)
+    return @_render_if_else(execute_body,chunk,context,bodies,params)
+
+  index_helper: (chunk, context, bodies, params)->
+    if context?.stack?.index?
+      index = 1 + context.stack.index
+    else
+      index = null
+    if bodies?.block?
+      return bodies.block(chunk, context.push(index))
+    else
+      chunk.write index
+      return chunk
+
+  # @last helper - evaluates the body iff the current element is the last in the list
+  last_helper: (chunk,context,bodies,params)=>
+    if context?.stack?.index?
+      c = (context.stack.index is (context.stack.of - 1))
+      return @_render_if_else(c, chunk, context, bodies, params)
+    return chunk
+
+  # @odd helper - evaluates the body iff the index of the current element is odd (for zebra striping, for example)
+  odd_helper: (chunk,context,bodies,params)=>
+    if context?.stack?.index?
+      c = (context.stack.index % 2 is 1)
+      return @_render_if_else(c, chunk, context, bodies, params)
+    return chunk
 
   random_helper: (chunk,context,bodies,params)=>
     if params?
@@ -105,49 +237,25 @@ class CommonDustjsHelpers
     else
       return chunk
 
-  index_helper: (chunk, context, bodies, params)->
-    if context?.stack?.index?
-      index = 1 + context.stack.index
+  regexp_helper:(chunk,context,bodies,params)=>
+    if params?.string?
+      string = @_eval_dust_string(params.string,chunk,context)
+    if params?.pattern?
+      pattern = @_eval_dust_string(params.pattern,chunk,context)
+    if params?.flags?
+      flags = @_eval_dust_string(params.flags,chunk,context)
+    if params?.var?
+      match = @_eval_dust_string(params.var,chunk,context)
+    unless match?
+      match = ""
+    match = "$#{match}"
+    unless string? and pattern?
+      return @_render_if_else false, chunk, context, bodies, params
     else
-      index = null
-    if bodies?.block?
-      return bodies.block(chunk, context.push(index))
-    else
-      chunk.write index
-      return chunk
-
-  classic_idx: (chunk, context, bodies)->
-    return bodies.block(chunk, context.push(context.stack.index))
-
-  classic_sep:(chunk, context, bodies)->
-    if (context.stack.index is (context.stack.of - 1))
-      return chunk
-    return bodies.block(chunk, context)
-
-  deorphan_helper:(chunk,context,bodies,params)=>
-    return chunk.capture bodies.block, context, (data,chunk)=>
-      data = @_eval_dust_string(data,chunk,context)
-      match = data.match /^((.|\s)+[^\s]{1})\s+([^\s]+\s*)$/
-      if match? and match[1]? and match[2]?
-        data = "#{match[1]}&nbsp;#{match[3]}"
-      chunk.write(data)
-      chunk.end()
-
-  # renders bodies.block iff b is true, bodies.else otherwise
-  _render_if_else:(b, chunk, context, bodies, params)->
-    if b is true
-      chunk = chunk.render(bodies.block,context) if bodies.block?
-    else
-      chunk = chunk.render(bodies.else,context) if bodies.else?
-    return chunk
-
-  filter_helper: (chunk,context,bodies,params)=>
-    filter_type = @_eval_dust_string(params.type,chunk,context) if params?.type?
-    return chunk.capture bodies.block, context, (data,chunk)->
-      if filter_type?
-        data = CommonDustjsHelpers.dust.filters[filter_type](data)
-      chunk.write(data)
-      chunk.end()
+      pattern = new RegExp(pattern,flags)
+      ctx = {}
+      ctx[match] = string.match pattern
+      return @_render_if_else ctx[match]?, chunk, context.push(ctx), bodies, params
 
   repeat_helper: (chunk,context,bodies,params)=>
     times = parseInt(@_eval_dust_string(params.times,chunk,context))
@@ -160,65 +268,79 @@ class CommonDustjsHelpers
       context.stack.head?['$len'] = undefined
     return chunk
 
-  upcase_helper: (chunk,context,bodies,params)=>
-    return chunk.capture bodies.block, context, (data,chunk) ->
-      chunk.write(data.toUpperCase())
-      chunk.end()
+  classic_sep:(chunk, context, bodies)->
+    if (context.stack.index is (context.stack.of - 1))
+      return chunk
+    return bodies.block(chunk, context)
+
+  substring_helper: (chunk,context,bodies,params)=>
+    if params?
+      if params["of"]? or params.string? or params.str? or params.value? or params.val?
+        str = @_eval_dust_string (params["of"] ? params.string ? params.str ? params.value ? params.val), chunk, context
+      if params.from? and @_to_int(params.from)?
+        from_index = @_to_int(params.from)
+      if params.to? and @_to_int(params.to)?
+        to_index = @_to_int(params.to)
+    if str?
+      chunk.write(@_get_substring(str,from_index,to_index))
+      return chunk
+    else
+      return chunk.capture bodies.block, context, (data,chunk)=>
+        chunk.write(@_get_substring(data,from_index,to_index))
+        chunk.end()
 
   titlecase_helper: (chunk,context,bodies,params)=>
     return chunk.capture bodies.block, context, (data,chunk) ->
       chunk.write( data.replace(/([^\W_]+[^\s-]*) */g, ((txt)->txt.charAt(0).toUpperCase()+txt.substr(1))) )
       chunk.end()
 
-  downcase_helper: (chunk,context,bodies,params)=>
-    return chunk.capture bodies.block, context, (data,chunk) ->
-      chunk.write(data.toLowerCase())
+  trim_helper: (chunk,context,bodies,params)=>
+    return chunk.capture bodies.block, context, (data,chunk)->
+      chunk.write(data.trim())
       chunk.end()
-
-  # @first helper - evaluates the body iff the current element is the first in the list
-  first_helper: (chunk,context,bodies,params)=>
-    if context?.stack?.index?
-      c = (context.stack.index is 0)
-      return @_render_if_else(c, chunk, context, bodies, params)
-    return chunk
-
-  # @last helper - evaluates the body iff the current element is the last in the list
-  last_helper: (chunk,context,bodies,params)=>
-    if context?.stack?.index?
-      c = (context.stack.index is (context.stack.of - 1))
-      return @_render_if_else(c, chunk, context, bodies, params)
-    return chunk
-
-  # @odd helper - evaluates the body iff the index of the current element is odd (for zebra striping, for example)
-  odd_helper: (chunk,context,bodies,params)=>
-    if context?.stack?.index?
-      c = (context.stack.index % 2 is 1)
-      return @_render_if_else(c, chunk, context, bodies, params)
-    return chunk
-
-  # @even helper - evaluates the body iff the index of the current element is even (for zebra striping, for example)
-  even_helper: (chunk,context,bodies,params)=>
-    if context?.stack?.index?
-      c = (context.stack.index % 2 is 0)
-      return @_render_if_else(c, chunk, context, bodies, params)
-    return chunk
-
-  count_helper: (chunk,context,bodies,params)=>
-    value = @_eval_dust_string(params.of,chunk,context)
-    if value?.length?
-      chunk.write(value.length)
-    return chunk
-
-  # {@if value=X matches=Y}
-  if_helper: (chunk,context,bodies,params)=>
-    execute_body = @_inner_if_helper(chunk,context,bodies,params)
-    return @_render_if_else(execute_body,chunk,context,bodies,params)
 
   # {@unless value=X matches=Y}
   unless_helper: (chunk,context,bodies,params)=>
     execute_body = @_inner_if_helper(chunk,context,bodies,params)
     execute_body = not execute_body
     return @_render_if_else(execute_body,chunk,context,bodies,params)
+
+  upcase_helper: (chunk,context,bodies,params)=>
+    return chunk.capture bodies.block, context, (data,chunk) ->
+      chunk.write(data.toUpperCase())
+      chunk.end()
+
+  # INTERNAL UTILITY METHODS
+  #############################################################################
+
+
+  _eval_dust_string: ( str, chunk, context )->
+    if typeof str is "function"
+      if str.length is 0
+        str = str()
+      else
+        buf = ''
+        (chunk.tap (data) ->
+          buf += data; return '').render( str, context ).untap()
+        str = buf
+    return str
+
+  # if `val` is a simple integer, return it as an integer, otherwise return null
+  _to_int: (val)=>
+    if /^-?[0-9]+/.test val
+      return parseInt(val)
+    else
+      return null
+
+
+  # renders bodies.block iff b is true, bodies.else otherwise
+  _render_if_else:(b, chunk, context, bodies, params)->
+    if b is true
+      chunk = chunk.render(bodies.block,context) if bodies.block?
+    else
+      chunk = chunk.render(bodies.else,context) if bodies.else?
+    return chunk
+
 
   #coffeelint:disable=cyclomatic_complexity
   _inner_if_helper: (chunk,context,bodies,params)=>
@@ -267,7 +389,7 @@ class CommonDustjsHelpers
           else if typeof value is 'string'
             if /^(T|Y|(ON))/i.test value
               execute_body = true
-            else if /^-?[0-9]+(\.[0-9]+)?$/.test value and parseInt(value) > 0
+            else if /^-?[0-9]+(\.[0-9]+)?$/.test(value) and parseInt(value) > 0
               execute_body = true
             else
               execute_body = false
@@ -279,42 +401,6 @@ class CommonDustjsHelpers
             execute_body = false
     return execute_body
   #coffeelint:enable=cyclomatic_complexity
-
-  regexp_helper:(chunk,context,bodies,params)=>
-    if params?.string?
-      string = @_eval_dust_string(params.string,chunk,context)
-    if params?.pattern?
-      pattern = @_eval_dust_string(params.pattern,chunk,context)
-    if params?.flags?
-      flags = @_eval_dust_string(params.flags,chunk,context)
-    if params?.var?
-      match = @_eval_dust_string(params.var,chunk,context)
-    unless match?
-      match = ""
-    match = "$#{match}"
-    unless string? and pattern?
-      return @_render_if_else false, chunk, context, bodies, params
-    else
-      pattern = new RegExp(pattern,flags)
-      ctx = {}
-      ctx[match] = string.match pattern
-      return @_render_if_else ctx[match]?, chunk, context.push(ctx), bodies, params
-
-  substring_helper: (chunk,context,bodies,params)=>
-    if params?
-      if params["of"]? or params.string? or params.str? or params.value? or params.val?
-        str = @_eval_dust_string (params["of"] ? params.string ? params.str ? params.value ? params.val), chunk, context
-      if params.from? and @_to_int(params.from)?
-        from_index = @_to_int(params.from)
-      if params.to? and @_to_int(params.to)?
-        to_index = @_to_int(params.to)
-    if str?
-      chunk.write(@_get_substring(str,from_index,to_index))
-      return chunk
-    else
-      return chunk.capture bodies.block, context, (data,chunk)=>
-        chunk.write(@_get_substring(data,from_index,to_index))
-        chunk.end()
 
   _get_substring:(str, from_index, to_index)=>
     substring = null
@@ -333,6 +419,41 @@ class CommonDustjsHelpers
     else
       substring = str
     return substring
+
+  # generates a comparator that compares two objects based on one of their attributes
+  # when `fold` is `true`, `a` will sort _before_ `B`
+  _attribute_comparator:(attr,fold=false,reverse=false)=>
+    (A,B)=>
+      if reverse
+        [A,B] = [B,A]
+      a = A?[attr]
+      b = B?[attr]
+      return @_compare(a,b,fold)
+
+  _compare:(a,b,fold=false)=>
+    if a? and b?
+      A = a
+      B = b
+      if fold
+        A = a.toUpperCase?() ? a
+        B = b.toUpperCase?() ? b
+      if A.localeCompare? and a.localeCompare?
+        val = A.localeCompare(B)
+        if val is 0 # if upper case version is tie, use lower case version
+          return a.localeCompare(b)
+        else
+          return val
+      else
+        return (if a > b then 1 else (if a < b then -1 else 0))
+    else if a? and not b?
+      return 1
+    else if b? and not a?
+      return -1
+    else
+      return 0
+
+# EXPORTS
+###############################################################################
 
 exports = exports ? this
 exports.CommonDustjsHelpers = CommonDustjsHelpers

@@ -88,6 +88,100 @@ when evaluated.
 
 Also see the `@odd`, `@first` and  `@last` helpers.
 
+
+## `@elements`
+
+The "elements" helper will iterate over the key-value pairs in a map (JavaScript object), much like the built-in `{#foo}{.}{/foo}` tag does with arrays.
+
+For example, given the context:
+
+    {
+      "foo": {
+        "a":"one",
+        "b":"two",
+        "c":"three"
+      }
+    }
+
+The Dust.js snippet:
+
+    {@elements of=foo}
+      {$key}={$value}{@sep}; {/sep}
+    {/elements}
+
+will resolve to:
+
+    a=one; b=two; c=three
+
+when evaluated.
+
+The `@elements` helper accepts several parameters:
+
+ * `of` - the map to iterate over.  When this value is a quoted string (`of="example"`), the context variable stored under than name will be used. (Dust variables within the quoted string will be evaluated as usual.)  Otherwise this value must be a map-valued Dust context variable (`of=example`).
+
+ * `key` - optional name under which the "key" value will be published. By default, the key part of each name-value pair will be exposed as the Dust variable named `$key`.  When the `key` parameter is set, the given name will be used in place of `$key`.
+
+ * `value` - optional name under which the "value" value will be published. By default, the value part of each name-value pair will be exposed as the Dust variable named `$value`.  When the `value` parameter is set, the given name will be used in place of `$value`.
+
+ * `index` - optional name under which the "index" value will be published. by default, a zero-valued index of the current name-value pair will be exposed as the Dust variable named `$idx`.  When the `index` parameter is set, the given name will be used in place of `$idx`.
+
+ * `sort` - optional flag indicating whether or not the elements should sorted.  By default, the name-value pairs in the map will be enumerated in an arbitrary order (the "natural" order returned by JavaScript's `Object.keys` method, typically the order in which the elements are added to the map).  The "sort" parameter allows one to take control of the order in which the elements are enumerated.
+
+   * When the `sort` parameter is `false` (the default), the elements will not be sorted.
+   * When the `sort` parameter is `true`, the elements will be sorted by key.
+   * When the `sort` parameter is an empty string `""`, the elements will be sorted by value.
+   * When the "sort" parameter is a non-empty string other than `true` or `false`, the elements will be sorted by the attribute of the value-objects with the specified name.  (See below for examples.)
+
+ * `dir` - sort direction. If a sort is being applied and `dir` is "D", "DSC", "DES" or "DESC" (ignoring case), the sort order will be reversed. (If `sort` is `false` or undefined, the `dir` parameter is ignored.)
+
+ * `fold` - fold case. By default JavaScript sorts _all_ capital letters before _any_ lower case letters, yielding a sequence such as `A,B,C,a,b,c`.  When `fold` is `true` (and a sort is being applied), the sort logic is changed to first perform a case-insensitive comparison between values, and then a case-sensitive comparison if and only if the case-insensitive values were the same.  This yields a sequence such as `A,a,B,b,C,c`, which is more in keeping with traditional notions of "alphabetical order" (at least in English).  If `sort` is `false` or undefined, the `fold` parameter is ignored.
+
+The `@elements` helper also accepts an (optional) `:else` block.  The contents of the `:else` block will be evaluated if the specified map does not exist or does not contain any keys.
+
+Here are some examples that illustrate the use of these parameters.
+
+Given the following context:
+
+    foo: {
+      c: { number:3, word:"three" }
+      a: { number:1, word:"one" }
+      A: { number:4, word:"ONE" }
+      b: { number:2, word:"two`" }
+      C: { number:6, word:"THREE" }
+      B: { number:5, word:"TWO" }
+    }
+
+Here are several templates and their corresponding output:
+
+    {@elements of=foo}{$key}={$value.word}{@sep}; {/sep}{/elements}
+      {! yields=> c=three; a=one; A=ONE; b=two; C=THREE; B=TWO !}
+
+    {@elements of=foo sort="true"}{$key}={$value.word}{@sep}; {/sep}{/elements}
+      {! yields=> A=ONE; B=TWO; C=THREE; a=one; b=two; c=three !}
+
+    {@elements of=foo sort="true" fold="true"}{$key}={$value.word}{@sep}; {/sep}{/elements}
+      {! yields=> A=ONE; a=one; B=TWO; b=two; C=THREE; c=three !}
+
+    {@elements of=foo sort="true" dir="D"}{$key}={$value.word}{@sep}; {/sep}{/elements}
+      {! yields=> c=three; b=two; a=one; C=THREE, B=TWO; A=ONE !}
+
+    {@elements of=foo sort="number"}{$key}={$value.number}{@sep}; {/sep}{/elements}
+      {! yields=> a=1; b=2, c=3; A=4; B=5; C=6 !}
+
+    {@elements of=foo}[{$idx}] {$key}={$value.word}{@sep}; {/sep}{/elements}
+      {! yields=> [0] c=three; [1] a=one; [2] A=ONE; [3] b=two; [4] C=THREE; [5] B=TWO !}
+
+    {@elements of=foo index="I" key="K" value="V"}[{I}] {K}={V.word}{@sep}; {/sep}{/elements}
+      {! yields=> [0] c=three; [1] a=one; [2] A=ONE; [3] b=two; [4] C=THREE; [5] B=TWO !}
+
+    {@elements of=foo sort="true"}[{$idx}] {$key}={$value.word}{@sep}; {/sep}{/elements}
+      {! yields=> [0] A=ONE; [1] B=TWO; [2] C=THREE; [3] a=one; [4] b=two; [5] c=three !}
+
+    {@elements of=bar}[{$idx}] {$key}={$value.word}{@sep}; {/sep}{:else}Empty Map!{/elements}
+      {! yields=> Empty Map! !}
+
+Note that sequence-based helper tags (`@even`, `@odd`, `@first`, `@last`, `@index`, `@idx`, `@sep`, etc.) work within the `@elements` helper in the same way that they do within the built-in `{#foo}{/foo}` array-iterating blocks.
+
 ## `@filter`
 
 Dust.js includes several "filters" that convert the content of a context variable before emitting it.  For example, the snippet:
