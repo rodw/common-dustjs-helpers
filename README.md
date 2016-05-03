@@ -12,9 +12,9 @@ NOTE: This repository follows the [git flow](https://github.com/nvie/gitflow) br
 
 `common-dustjs-helpers` is packaged as an npm module under the name [common-dustjs-helpers](https://npmjs.org/package/common-dustjs-helpers).  To install the library, run:
 
-    npm install -g common-dustjs-helpers
+    npm install common-dustjs-helpers
 
-(omit the `-g` flag to install the module in the local working directory rather than "globally") or add something like:
+or add something like:
 
     "common-dustjs-helpers": "latest"
 
@@ -22,14 +22,16 @@ to the `dependencies` section of your `package.json` file.
 
 ## Using
 
-To register the common helper functions with your Dust.js instance, require the module and then invoke the `export_helpers_to` method.  For example:
+To register the common helper functions with your Dust.js instance, require the module and then invoke the `exportTo` method.  For example:
 
-
-    var helpers = new require("common-dustjs-helpers").CommonDustjsHelpers();
     var dust = require("dustjs"); // or "dustjs-linkedin"
-    helpers.export_to(dust);
+    require("common-dustjs-helpers").exportTo(dust);
 
-and then use the Dust.js instance (`dust`) as you normally would.
+You can then use the Dust.js instance (`dust`) as you normally would.
+
+If you'd like to register the helper methods but not the filter, use `exportHelpersTo`.  If you'd like to register the filter(s) but not the helper methods, use `exportFiltersTo`.
+
+Note that `exportTo`, `exportHelpersTo` and `exportFiltersTo` are also available as `export_to`, `export_helpers_to` and `export_filters_to`.
 
 ## The Helpers
 
