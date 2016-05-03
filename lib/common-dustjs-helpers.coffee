@@ -1,17 +1,21 @@
 class CommonDustjsHelpers
+
   @dust = null
 
   export_to: (dust)=>
     @export_helpers_to(dust)
     @export_filters_to(dust)
+    return this
 
   export_helpers_to: (dust)=>
     dust.helpers = @get_helpers(dust.helpers)
     CommonDustjsHelpers.dust = dust
+    return this
 
   export_filters_to: (dust)=>
     dust.filters = @get_filters(dust.filters)
     CommonDustjsHelpers.dust = dust
+    return this
 
   # Render the given `context` using the dust script in the given `template_body`,
   # invoking `callback(err,output)` when done.
@@ -158,7 +162,6 @@ class CommonDustjsHelpers
         chunk = chunk.render(bodies.else,context)
     return chunk
 
-  # @even helper - evaluates the body iff the index of the current element is even (for zebra striping, for example)
   even_helper: (chunk,context,bodies,params)=>
     if context?.stack?.index?
       c = (context.stack.index % 2 is 0)
@@ -174,7 +177,6 @@ class CommonDustjsHelpers
       chunk.write(data)
       chunk.end()
 
-  # @first helper - evaluates the body iff the current element is the first in the list
   first_helper: (chunk,context,bodies,params)=>
     if context?.stack?.index?
       c = (context.stack.index is 0)
@@ -184,7 +186,6 @@ class CommonDustjsHelpers
   classic_idx: (chunk, context, bodies)->
     return bodies.block(chunk, context.push(context.stack.index))
 
-  # {@if value=X matches=Y}
   if_helper: (chunk,context,bodies,params)=>
     execute_body = @_inner_if_helper(chunk,context,bodies,params)
     return @_render_if_else(execute_body,chunk,context,bodies,params)
@@ -200,14 +201,12 @@ class CommonDustjsHelpers
       chunk.write index
       return chunk
 
-  # @last helper - evaluates the body iff the current element is the last in the list
   last_helper: (chunk,context,bodies,params)=>
     if context?.stack?.index?
       c = (context.stack.index is (context.stack.of - 1))
       return @_render_if_else(c, chunk, context, bodies, params)
     return chunk
 
-  # @odd helper - evaluates the body iff the index of the current element is odd (for zebra striping, for example)
   odd_helper: (chunk,context,bodies,params)=>
     if context?.stack?.index?
       c = (context.stack.index % 2 is 1)
@@ -299,7 +298,6 @@ class CommonDustjsHelpers
       chunk.write(data.trim())
       chunk.end()
 
-  # {@unless value=X matches=Y}
   unless_helper: (chunk,context,bodies,params)=>
     execute_body = @_inner_if_helper(chunk,context,bodies,params)
     execute_body = not execute_body
@@ -310,9 +308,9 @@ class CommonDustjsHelpers
       chunk.write(data.toUpperCase())
       chunk.end()
 
+
   # INTERNAL UTILITY METHODS
   #############################################################################
-
 
   _eval_dust_string: ( str, chunk, context )->
     if typeof str is "function"
@@ -455,5 +453,5 @@ class CommonDustjsHelpers
 # EXPORTS
 ###############################################################################
 
-exports = exports ? this
+exports                     = exports ? this
 exports.CommonDustjsHelpers = CommonDustjsHelpers

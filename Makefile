@@ -85,7 +85,7 @@ test-module-install: clean-test-module-install module
 	mkdir -p ${TEST_MODULE_DIR}
 	cd ${TEST_MODULE_DIR}
 	npm install "$(CURDIR)/$(PACKAGE_DIR).tgz"
-	node -e "require('assert').ok(require('common-dustjs-helpers').CommonDustjsHelpers !== null);" && echo "It worked!" && cd $(CURDIR) && rm -rf ${TEST_MODULE_DIR}
+	@(node -e "require('assert').ok(require('common-dustjs-helpers').exportTo !== null);" &&  echo "\n\033[1;32m It worked! \033[0m\n" && cd $(CURDIR) && rm -rf ${TEST_MODULE_DIR})
 $(NODE_MODULES): $(PACKAGE_JSON)
 	$(NPM_EXE) prune
 	$(NPM_EXE) --silent install
