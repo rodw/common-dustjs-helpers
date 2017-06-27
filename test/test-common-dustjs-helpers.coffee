@@ -50,6 +50,11 @@ new DustTestSuite("DustTestSuite", {
     context:  { name:"World"},
     expected: 'Hello World!'
   }
+  'SCRATCH':{
+    source:   'Hello {foo bar}!',
+    context:  { name:"World"},
+    expected: 'Hello World!'
+  }
 }).run_tests_on dust
 
 new DustTestSuite("|json filter", {
