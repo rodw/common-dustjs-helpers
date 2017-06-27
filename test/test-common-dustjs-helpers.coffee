@@ -359,9 +359,19 @@ new DustTestSuite("@if helper",{
     context:  { x: true },
     expected: 'before|YES|after'
   }
+  '@if value="true"':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: "true" },
+    expected: 'before|YES|after'
+  }
   '@if value=1':{
     source:   'before|{@if value=x}YES{:else}NO{/if}|after',
     context:  { x: 1 },
+    expected: 'before|YES|after'
+  }
+  '@if value="1"':{
+    source:   'before|{@if value=x}YES{:else}NO{/if}|after',
+    context:  { x: "true" },
     expected: 'before|YES|after'
   }
   '@if value=T':{
@@ -479,12 +489,12 @@ new DustTestSuite("@if helper",{
     context:  { x: false },
     expected: 'before|NO|after'
   }
-  '@if value="true"':{
+  '@if value="true" (literal)':{
     source:   'before|{@if value="true"}YES{:else}NO{/if}|after',
     context:  {  },
     expected: 'before|YES|after'
   }
-  '@if value="false"':{
+  '@if value="false" (literal)':{
     source:   'before|{@if value="false"}YES{:else}NO{/if}|after',
     expected: 'before|NO|after'
   }
