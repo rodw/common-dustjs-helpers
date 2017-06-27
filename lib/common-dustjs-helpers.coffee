@@ -41,6 +41,7 @@ class CommonDustjsHelpers
     helpers['repeat']    = @repeat_helper
     helpers['sep']       = @classic_sep unless helpers['sep']? # restore default {@sep} if not found
     helpers['substring'] = @substring_helper
+    helpers['switch']    = @switch_helper
     helpers['titlecase'] = helpers['Titlecase'] = @titlecase_helper
     helpers['trim']      = @trim_helper
     helpers['unless']    = @unless_helper
@@ -297,6 +298,23 @@ class CommonDustjsHelpers
     return chunk.capture bodies.block, context, (data,chunk)->
       chunk.write(data.trim())
       chunk.end()
+
+  switch_helper: (chunk,context,bodies,params)=>
+    val = params.on ? params.when ? params.for ? params.value ? params.val ? params.v
+    if val?
+      val = @_eval_dust_string(val,chunk,context)
+    if val in [null,undefined,""] # render the main block for the null or empty string case
+      chunk = chunk.render(bodies.block,context) if bodies.block?
+    else
+      found_match = false
+      for name, body of bodies
+        if "#{name}" is "#{val}"
+          chunk = chunk.render(body,context)
+          found_match = true
+          break
+      unless found_match
+        chunk = chunk.render(bodies.else,context) if bodies.else?
+    return chunk
 
   unless_helper: (chunk,context,bodies,params)=>
     execute_body = @_inner_if_helper(chunk,context,bodies,params)

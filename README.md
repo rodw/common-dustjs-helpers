@@ -69,6 +69,8 @@ Note that `exportTo`, `exportHelpersTo` and `exportFiltersTo` are also available
 
  * **@substring** - extracts a substring from an input parameter or the tag body (e.g., `{@substring of="{foo}" from="4" to="8"/}`)
 
+ * **@switch** - case-statement like (e.g., `{@switch on=val}{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}`)
+
  * **@titlecase** - converts text to title case (e.g., `{@titlecase}Foo{/titlecase}`)
 
  * **@trim** - removes leading and trailing whitespace within the body of the tag (e.g., `{@trim}  Foo {bar}{~n}{/trim}`)

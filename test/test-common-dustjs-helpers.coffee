@@ -969,3 +969,127 @@ new DustTestSuite("@elements helper", {
     expected: "BEFORE|bar=|AFTER"
   }
 }).run_tests_on dust
+
+
+# @switch
+new DustTestSuite("@switch helper",{
+  '@switch - simple context var - case foo':{
+    source:   'before|{@switch on=val}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:"foo" },
+    expected: 'before|It was foo.|after'
+  }
+  '@switch - simple context var - case bar':{
+    source:   'before|{@switch on=val}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:"bar" },
+    expected: 'before|It was bar.|after'
+  }
+  '@switch - simple context var - case null':{
+    source:   'before|{@switch on=val}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:null },
+    expected: 'before|It was null.|after'
+  }
+  '@switch - simple context var - case undefined':{
+    source:   'before|{@switch on=val}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { },
+    expected: 'before|It was null.|after'
+  }
+  '@switch - simple context var - case blank':{
+    source:   'before|{@switch on=val}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:"" },
+    expected: 'before|It was null.|after'
+  }
+  '@switch - simple context var - case else':{
+    source:   'before|{@switch on=val}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:"other" },
+    expected: 'before|It was something else.|after'
+  }
+
+  '@switch - string literal - case foo':{
+    source:   'before|{@switch on="foo"}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { x:"ignored" },
+    expected: 'before|It was foo.|after'
+  }
+  '@switch - string literal - case bar':{
+    source:   'before|{@switch on="bar"}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { x:"ignored" },
+    expected: 'before|It was bar.|after'
+  }
+  '@switch - string literal - case undefined':{
+    source:   'before|{@switch}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { x:"ignored" },
+    expected: 'before|It was null.|after'
+  }
+  '@switch - string literal - case blank':{
+    source:   'before|{@switch on=""}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { x:"ignored" },
+    expected: 'before|It was null.|after'
+  }
+  '@switch - string literal - case else':{
+    source:   'before|{@switch on="other"}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { x:"ignored" },
+    expected: 'before|It was something else.|after'
+  }
+
+  '@switch - quoted context var - case foo':{
+    source:   'before|{@switch on="{val}"}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:"foo" },
+    expected: 'before|It was foo.|after'
+  }
+  '@switch - quoted context var - case bar':{
+    source:   'before|{@switch on="{val}"}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:"bar" },
+    expected: 'before|It was bar.|after'
+  }
+  '@switch - quoted context var - case null':{
+    source:   'before|{@switch on="{val}"}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:null },
+    expected: 'before|It was null.|after'
+  }
+  '@switch - quoted context var - case undefined':{
+    source:   'before|{@switch on="{val}"}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { },
+    expected: 'before|It was null.|after'
+  }
+  '@switch - quoted context var - case blank':{
+    source:   'before|{@switch on="{val}"}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:"" },
+    expected: 'before|It was null.|after'
+  }
+  '@switch - quoted context var - case else':{
+    source:   'before|{@switch on="{val}"}It was null.{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}|after',
+    context:  { val:"other" },
+    expected: 'before|It was something else.|after'
+  }
+
+  '@switch - workaround for numbers - case undefined':{
+    source:   'before|{@switch on="n{val}"}{:n}It was undefined.{:n0}It was zero.{:n1}It was one.{:n2}It was two.{:else}It was something else.{/switch}|after',
+    context:  { },
+    expected: 'before|It was undefined.|after'
+  }
+  '@switch - workaround for numbers - case NaN':{
+    source:   'before|{@switch on="n{val}"}{:n}It was undefined.{:n0}It was zero.{:n1}It was one.{:n2}It was two.{:else}It was something else.{/switch}|after',
+    context:  { val:NaN },
+    expected: 'before|It was undefined.|after'
+  }
+  '@switch - workaround for numbers - case 0':{
+    source:   'before|{@switch on="n{val}"}{:n}It was null.{:n0}It was zero.{:n1}It was one.{:n2}It was two.{:else}It was something else.{/switch}|after',
+    context:  { val:0 },
+    expected: 'before|It was zero.|after'
+  }
+  '@switch - workaround for numbers - case 1':{
+    source:   'before|{@switch on="n{val}"}{:n}It was null.{:n0}It was zero.{:n1}It was one.{:n2}It was two.{:else}It was something else.{/switch}|after',
+    context:  { val:1 },
+    expected: 'before|It was one.|after'
+  }
+  '@switch - workaround for numbers - case 2':{
+    source:   'before|{@switch on="n{val}"}{:n}It was null.{:n0}It was zero.{:n1}It was one.{:n2}It was two.{:else}It was something else.{/switch}|after',
+    context:  { val:2 },
+    expected: 'before|It was two.|after'
+  }
+  '@switch - workaround for numbers - case other':{
+    source:   'before|{@switch on="n{val}"}{:n}It was null.{:n0}It was zero.{:n1}It was one.{:n2}It was two.{:else}It was something else.{/switch}|after',
+    context:  { val:17 },
+    expected: 'before|It was something else.|after'
+  }
+
+}).run_tests_on dust
