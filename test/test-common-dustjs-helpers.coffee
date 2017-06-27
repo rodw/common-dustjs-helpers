@@ -727,10 +727,15 @@ new DustTestSuite("@*case helpers",{
 
 # @count
 new DustTestSuite("@count helper",{
-  '@count':{
+  '@count - array':{
     source:   'before|{@count of=list/}|after',
     context:  { list: ['one','two','three','four','five'] },
     expected: 'before|5|after'
+  }
+  '@count - map':{
+    source:   'before|{@count of=map/}|after',
+    context:  { map: {one:1, two:2, three:3} },
+    expected: 'before|3|after'
   }
 }).run_tests_on dust
 
