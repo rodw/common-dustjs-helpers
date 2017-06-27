@@ -37,7 +37,7 @@ Note that `exportTo`, `exportHelpersTo` and `exportFiltersTo` are also available
 
  * **@count** - emits the size of an array or similar container (e.g., `{@count of=foo/}`).
 
- * **@deorphan** - replaces whitespace between the last two "words" of the body to `&nbsp;` (e.g., `{@deorphan}Foo bar.{/deorphan}` becomes `Foo&nbsp;bar.`).
+ * **@deorphan** - replaces whitespace between the last two "words" of the body with `&nbsp;` (e.g., `{@deorphan}Foo bar.{/deorphan}` becomes `Foo&nbsp;bar.`).
 
  * **@downcase** - converts text to lower case (e.g., `{@downcase}Foo{/downcase}`).
 
