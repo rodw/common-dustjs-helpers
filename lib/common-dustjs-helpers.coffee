@@ -96,13 +96,9 @@ class CommonDustjsHelpers
       chunk.end()
 
   elements_helper: (chunk,context,bodies,params)=>
-    obj = null
-    if params?['of']?
-      if typeof params.of is 'string'
-        obj_name = @_eval_dust_string(params['of'], chunk, context)
-        obj = context.get(obj_name)
-      else
-        obj = params.of
+    obj = params.of ? params.in
+    if typeof obj isnt 'object'
+      obj = null
     index_name = "$idx"
     if params?['idx']? or params?['index']?
       index_name = @_eval_dust_string(params['idx'] ? params['index'], chunk, context)
@@ -139,9 +135,9 @@ class CommonDustjsHelpers
         pairs.push pair
       if sort?
         if sort is true
-          comparator = @_attribute_comparator("key",fold,reverse_sort)
+          comparator = @_attribute_comparator("key",reverse_sort)
         else if typeof sort is 'string'
-          comparator = @_attribute_comparator("sortkey",fold,reverse_sort)
+          comparator = @_attribute_comparator("sortkey",reverse_sort)
         pairs = pairs.sort(comparator)
     if pairs.length > 0
       for p in pairs
@@ -433,28 +429,18 @@ class CommonDustjsHelpers
     return substring
 
   # generates a comparator that compares two objects based on one of their attributes
-  # when `fold` is `true`, `a` will sort _before_ `B`
-  _attribute_comparator:(attr,fold=false,reverse=false)=>
+  _attribute_comparator:(attr,reverse=false)=>
     (A,B)=>
       if reverse
         [A,B] = [B,A]
       a = A?[attr]
       b = B?[attr]
-      return @_compare(a,b,fold)
+      return @_compare(a,b)
 
-  _compare:(a,b,fold=false)=>
+  _compare:(a,b)=>
     if a? and b?
-      A = a
-      B = b
-      if fold
-        A = a.toUpperCase?() ? a
-        B = b.toUpperCase?() ? b
-      if A.localeCompare? and a.localeCompare?
-        val = A.localeCompare(B)
-        if val is 0 # if upper case version is tie, use lower case version
-          return a.localeCompare(b)
-        else
-          return val
+      if a.localeCompare?
+        return a.localeCompare(b)
       else
         return (if a > b then 1 else (if a < b then -1 else 0))
     else if a? and not b?

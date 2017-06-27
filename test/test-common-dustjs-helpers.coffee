@@ -790,29 +790,7 @@ new DustTestSuite("positional helpers",{
 
 
 new DustTestSuite("@elements helper", {
-  'can iterate over name/value pairs, sorted by name (of="string" case)':{
-    source:   '{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
-    context:  {
-      foo:{
-        a:"one"
-        b:"two"
-        c:"three"
-      }
-    },
-    expected: "a=one\nb=two\nc=three"
-  }
-  'can iterate over name/value pairs, sorted by value':{
-    source:   '{@elements of="foo" sort=""}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
-    context:  {
-      foo:{
-        a:"one"
-        b:"two"
-        c:"three"
-      }
-    },
-    expected: "a=one\nc=three\nb=two"
-  }
-  'can iterate over name/value pairs, sorted by name (of=object case)':{
+  'can iterate over name/value pairs, sorted by name':{
     source:   '{@elements of=foo}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
     context:  {
       foo:{
@@ -823,8 +801,19 @@ new DustTestSuite("@elements helper", {
     },
     expected: "a=one\nb=two\nc=three"
   }
+  'can iterate over name/value pairs, sorted by value':{
+    source: '{@elements of=foo sort=""}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        a:"one"
+        b:"two"
+        c:"three"
+      }
+    },
+    expected: "a=one\nc=three\nb=two"
+  }
   'can iterate over name/object pairs':{
-    source:   '{@elements of="foo"}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
+    source:   '{@elements of=foo}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
     context:  {
       foo:{
         a:{x:"one",z:2}
@@ -835,7 +824,7 @@ new DustTestSuite("@elements helper", {
     expected: "a=one\nb=two\nc=three"
   }
   'can iterate over name/object pairs (sort=false case)':{
-    source:   '{@elements of="foo" sort="false"}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
+    source:   '{@elements of=foo sort="false"}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
     context:  {
       foo:{
         a:{x:"one",z:2}
@@ -845,8 +834,8 @@ new DustTestSuite("@elements helper", {
     },
     expected: "a=one\nb=two\nc=three"
   }
-  'can iterate over name/value pairs, sorted by name':{
-    source:   '{@elements of="foo" sort="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+  'can iterate over name/value pairs, sorted by name (sort=true)':{
+    source:   '{@elements of=foo sort="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
     context:  {
       foo:{
         b:"two"
@@ -857,7 +846,7 @@ new DustTestSuite("@elements helper", {
     expected: "a=one\nb=two\nc=three"
   }
   'can iterate over name/value pairs, sorted by name, descending':{
-    source:   '{@elements of="foo" sort="true" dir="desc"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    source:   '{@elements of=foo sort="true" dir="desc"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
     context:  {
       foo:{
         b:"two"
@@ -868,7 +857,7 @@ new DustTestSuite("@elements helper", {
     expected: "c=three\nb=two\na=one"
   }
   'can iterate over name/value pairs, sorted by name, default ordering (aABbCc) (modern node now uses folded by default)':{
-    source:   '{@elements of="foo" sort="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    source:   '{@elements of=foo sort="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
     context:  {
       foo:{
         C:"THREE"
@@ -882,23 +871,8 @@ new DustTestSuite("@elements helper", {
     expected: "a=one\nA=ONE\nb=two\nB=TWO\nc=three\nC=THREE"
   }
   'can iterate over name/value pairs, sorted by name, folded ordering (aABbCc)':{
-      source:   '{@elements of="foo" sort="true" fold="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+      source:   '{@elements of=foo sort="true"}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
       context:  {
-        foo:{
-          C:"THREE"
-          A:"ONE"
-          b:"two"
-          a:"one"
-          B:"TWO"
-          c:"three"
-        }
-      },
-      expected: "a=one\nA=ONE\nb=two\nB=TWO\nc=three\nC=THREE"
-    }
-  'can iterate over name/value pairs, sorted by name, folded ordering (aAbBcC), value from var':{
-      source:   '{@elements of="foo" sort="true" fold=should_fold}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
-      context:  {
-        should_fold:true
         foo:{
           C:"THREE"
           A:"ONE"
@@ -911,7 +885,7 @@ new DustTestSuite("@elements helper", {
       expected: "a=one\nA=ONE\nb=two\nB=TWO\nc=three\nC=THREE"
     }
   'can iterate over name/object pairs, sorted by attribute':{
-    source:   '{@elements of="foo" sort="z"}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
+    source:   '{@elements of=foo sort="z"}{$key}={$value.x}{@sep}{~n}{/sep}{/elements}',
     context:  {
       foo:{
         a:{x:"one",z:2}
@@ -922,7 +896,7 @@ new DustTestSuite("@elements helper", {
     expected: "c=three\na=one\nb=two"
   }
   'can customize field names':{
-    source:   '{@elements of="foo" index="I" key="DAKEY" value="DAVALUE"}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}',
+    source:   '{@elements of=foo index="I" key="DAKEY" value="DAVALUE"}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}',
     context:  {
       foo:{
         a:"one"
@@ -933,7 +907,7 @@ new DustTestSuite("@elements helper", {
     expected: "[0] a=one\n[1] b=two\n[2] c=three"
   }
   'doesn\'t choke on null input':{
-    source:   'BEFORE|{@elements of="bar"}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}|AFTER',
+    source:   'BEFORE|{@elements of=bar}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}|AFTER',
     context:  {
       foo:{
         a:"one"
@@ -944,28 +918,34 @@ new DustTestSuite("@elements helper", {
     expected: "BEFORE||AFTER"
   }
   'doesn\'t choke on empty input':{
-    source:   'BEFORE|{@elements of="foo"}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}|AFTER',
+    source:   'BEFORE|{@elements of=foo}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}|AFTER',
     context:  {
       foo:{
       }
     },
     expected: "BEFORE||AFTER"
   }
+  'doesn\'t choke on string input':{
+    source:   'BEFORE|{@elements of="xyzzy"}[{I}] {DAKEY}={DAVALUE}{@sep}{~n}{/sep}{/elements}|AFTER',
+    context:  {
+    },
+    expected: "BEFORE||AFTER"
+  }
   'evaluates :else on empty input':{
-    source:   'BEFORE|{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{:else}EMPTY{/elements}|AFTER',
+    source:   'BEFORE|{@elements of=foo}{$key}={$value}{@sep}{~n}{/sep}{:else}EMPTY{/elements}|AFTER',
     context:  {
       foo:{ }
     },
     expected: "BEFORE|EMPTY|AFTER"
   }
-  'evaluates :else on undefined empty input':{
-    source:   'BEFORE|{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{:else}EMPTY{/elements}|AFTER',
+  'evaluates :else on undefined input':{
+    source:   'BEFORE|{@elements}{$key}={$value}{@sep}{~n}{/sep}{:else}EMPTY{/elements}|AFTER',
     context:  {
     },
     expected: "BEFORE|EMPTY|AFTER"
   }
   'doesn\'t choke on null values':{
-    source:   'BEFORE|{@elements of="foo"}{$key}={$value}{@sep}{~n}{/sep}{/elements}|AFTER',
+    source:   'BEFORE|{@elements of=foo}{$key}={$value}{@sep}{~n}{/sep}{/elements}|AFTER',
     context:  {
       foo:{
         bar:null
