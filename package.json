@@ -23,6 +23,6 @@
     "should"          : "latest"
   },
   "engines": {
-    "node":       ">= 0.10.3"
+    "node":       ">= 6"
   }
 }
