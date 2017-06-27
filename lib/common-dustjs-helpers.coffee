@@ -72,7 +72,7 @@ class CommonDustjsHelpers
   #############################################################################
 
   count_helper: (chunk,context,bodies,params)=>
-    value = @_eval_dust_string(params.of,chunk,context)
+    value = @_eval_dust_string((params.of ? params.in) ,chunk,context)
     if Array.isArray(value)
       chunk.write(value.length)
     else if typeof value is "object"
@@ -119,14 +119,6 @@ class CommonDustjsHelpers
         sort = true
       else if /^(f(alse)?$)/i.test sort
         sort = null
-    if sort?
-      fold = null
-      if params?['fold']?
-        fold = @_eval_dust_string(params['fold'], chunk, context)
-        if /^t(rue)?$/i.test fold
-          fold = true
-        else
-          fold = false
     if sort?
       reverse_sort = false
       if params?['dir']?
