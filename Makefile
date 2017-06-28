@@ -83,7 +83,7 @@ clean-js:
 	rm -f $(COFFEE_JS)
 
 ### NPM ########################################################################
-module: test coverage docs
+module: test coverage docs js
 	mkdir -p $(MODULE_DIR)
 	cp README.md $(MODULE_DIR)
 	cp LICENSE $(MODULE_DIR)
@@ -92,10 +92,7 @@ module: test coverage docs
 	mv module $(PACKAGE_DIR)
 	tar -czf $(PACKAGE_DIR).tgz $(PACKAGE_DIR)
 test-module-install: clean-test-module-install module
-	mkdir -p ${TEST_MODULE_DIR}
-	cd ${TEST_MODULE_DIR}
-	npm install "$(CURDIR)/$(PACKAGE_DIR).tgz"
-	@(node -e "require('assert').ok(require('common-dustjs-helpers').exportTo !== null);" &&  echo "\n\033[1;32m It worked! \033[0m\n" && cd $(CURDIR) && rm -rf ${TEST_MODULE_DIR})
+	mkdir -p ${TEST_MODULE_DIR}; cd ${TEST_MODULE_DIR}; npm install "$(CURDIR)/$(PACKAGE_DIR).tgz"; node -e "require('assert').ok(require('common-dustjs-helpers').exportTo !== null);" &&  echo "\n\033[1;32m It worked! \033[0m\n" && cd $(CURDIR) && rm -rf ${TEST_MODULE_DIR}
 $(NODE_MODULES): $(PACKAGE_JSON)
 	$(NPM_EXE) prune
 	$(NPM_EXE) --silent install
