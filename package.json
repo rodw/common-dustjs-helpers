@@ -13,14 +13,13 @@
   "scripts":      { "test": "make test" },
   "directories":  { "lib":"lib" },
   "devDependencies" : {
-    "coffee-script"   : "latest",
-    "docco"           : "latest",
-    "dustjs-linkedin" : "latest",
-    "expresso"        : "latest",
-    "jscoverage"      : "latest",
-    "marked"          : "latest",
-    "mocha"           : "latest",
-    "should"          : "latest"
+    "coffee-script"   : "^1",
+    "docco"           : "^0",
+    "dustjs-linkedin" : "^2",
+    "coffee-coverage" : "^1",
+    "marked"          : "^0",
+    "mocha"           : "^2",
+    "should"          : "^11"
   },
   "engines": {
     "node":       ">= 6"
