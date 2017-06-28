@@ -32,13 +32,23 @@ MOCHA_TEST_PATTERN ?=
 MOCHA_TIMEOUT ?=-t 2000
 MOCHA_TEST_ARGS  ?= -R list --compilers coffee:coffee-script/register $(MOCHA_TIMEOUT) $(MOCHA_TEST_PATTERN)
 
-### JSCOVERAGE #################################################################
-JSCOVERAGE_EXE ?= ./node_modules/.bin/node-jscoverage
-JSCOVERAGE_REPORT ?= docs/coverage.html
-JSCOVERAGE_TMP_DIR ?=  ./jscov-tmp
-LIB_COV ?= lib-cov
+# ### JSCOVERAGE #################################################################
+# JSCOVERAGE_EXE ?= ./node_modules/.bin/node-jscoverage
+# JSCOVERAGE_REPORT ?= docs/coverage.html
+# JSCOVERAGE_TMP_DIR ?=  ./jscov-tmp
+# LIB_COV ?= lib-cov
+# LIB ?= lib
+# # MOCHA_COV_ARGS  ?= -R html-cov --compilers coffee:coffee-script/register --globals "_\$$jscoverage"
+# MOCHA_COV_ARGS  ?= --require $(LIB_COV)/coffee-coverage-init.js --globals "_\$$jscoverage" --compilers coffee:coffee-script/register -R html-cov -t 20000
+
+# COVERAGE #####################################################################
 LIB ?= lib
-MOCHA_COV_ARGS  ?= -R html-cov --compilers coffee:coffee-script/register --globals "_\$$jscoverage"
+LIB_COV ?= lib-cov
+COVERAGE_REPORT ?= docs/coverage.html
+COVERAGE_TMP_DIR ?=  ./cov-tmp
+COVERAGE_EXE ?= ./node_modules/.bin/coffeeCoverage
+COVERAGE_ARGS ?= -e migration --initfile $(LIB_COV)/coffee-coverage-init.js
+MOCHA_COV_ARGS  ?= --require $(LIB_COV)/coffee-coverage-init.js --globals "_\$$jscoverage" --compilers coffee:coffee-script/register -R html-cov -t 2000
 
 ### MARKDOWN ###################################################################
 MARKDOWN_EXE ?= ./node_modules/.bin/marked
@@ -55,7 +65,7 @@ MARKDOWN_SUFFIX ?= "</body></html>"
 ################################################################################
 
 .SUFFIXES:;
-.PHONY: all clean really-clean npm install clean-node-modules really-clean-node-modules tes  clean-test-module-install clean-module module test-module-install coverage clean-coverage docco markdown clean-docco clean-markdown docs clean-docs publish coffee litcoffee clean-litcoffee;
+.PHONY: all clean really-clean npm install clean-node-modules really-clean-node-modules test  clean-test-module-install clean-module module test-module-install coverage clean-coverage docco markdown clean-docco clean-markdown docs clean-docs publish coffee litcoffee clean-litcoffee;
 
 ### ALL ########################################################################
 all: test;
@@ -105,17 +115,19 @@ publish: module test-module-install; $(NPM_EXE) publish $(PACKAGE_DIR).tgz
 test: test-mocha
 test-mocha: $(NODE_MODULES) $(MOCHA_TESTS) $(COFFEE_SRCS) $(COFFEE_TEST_SRCS);
 	$(MOCHA_EXE) $(MOCHA_TEST_ARGS) $(MOCHA_TESTS)
-coverage: js
-	rm -rf $(JSCOVERAGE_TMP_DIR)
+
+clean-coverage:; rm -rf  $(COVERAGE_TMP_DIR) $(LIB_COV) $(COVERAGE_REPORT)
+
+coverage: $(COFFEE_SRCS) $(COFFEE_TEST_SRCS) $(MOCHA_TESTS) $(NODE_MODULES)
+	rm -rf $(COVERAGE_TMP_DIR)
 	rm -rf $(LIB_COV)
-	mkdir -p $(JSCOVERAGE_TMP_DIR)
-	cp -r $(LIB)/* $(JSCOVERAGE_TMP_DIR)/.
-	$(JSCOVERAGE_EXE) -v $(JSCOVERAGE_TMP_DIR) $(LIB_COV)
-	mkdir -p `dirname $(JSCOVERAGE_REPORT)`
-	$(MOCHA_EXE) $(MOCHA_COV_ARGS) $(MOCHA_TESTS) > $(JSCOVERAGE_REPORT)
-	rm -rf $(JSCOVERAGE_TMP_DIR)
+	mkdir -p $(COVERAGE_TMP_DIR)
+	cp -r $(LIB)/* $(COVERAGE_TMP_DIR)/.
+	$(COVERAGE_EXE) $(COVERAGE_ARGS) $(COVERAGE_TMP_DIR) $(LIB_COV)
+	mkdir -p `dirname $(COVERAGE_REPORT)`
+	$(MOCHA_EXE) $(MOCHA_COV_ARGS) $(MOCHA_TESTS) > $(COVERAGE_REPORT)
+	rm -rf $(COVERAGE_TMP_DIR)
 	rm -rf $(LIB_COV)
-clean-coverage:; rm -rf  $(JSCOVERAGE_TMP_DIR) $(LIB_COV) $(JSCOVERAGE_REPORT)
 
 ### DOCS #######################################################################
 docs: markdown litcoffee docco

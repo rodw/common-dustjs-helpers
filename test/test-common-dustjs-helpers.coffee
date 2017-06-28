@@ -58,6 +58,26 @@ new DustTestSuite("|json filter", {
     context:  {foo:'A string with\n\t"FUNKY CHARACTERS".'},
     expected: "A string with\\n\\t\\\"FUNKY CHARACTERS\\\"."
   }
+  'handles boolean and numberic types':{
+    source:   '{bool|json|s}, {int|json|s}, {float|json|s}',
+    context:  {bool:true, int:3, float:3.14},
+    expected: "true, 3, 3.14"
+  }
+  'stringifies objects':{
+    source:   '{foo|json|s}',
+    context:  {foo:{"A":1, "B":2}},
+    expected: '{"A":1,"B":2}'
+  }
+  'doesn\'t choke on undefined':{
+    source:   '{foo|json|s}',
+    context:  {},
+    expected: ""
+  }
+  'doesn\'t choke on null':{
+    source:   '{foo|json|s}',
+    context:  {foo:null},
+    expected: ""
+  }
 }).run_tests_on dust
 
 for i in [0...10]
@@ -121,6 +141,11 @@ new DustTestSuite("@trim helper", {
 new DustTestSuite("@substring helper", {
   'can extract substrings from parameter (with from and to)':{
     source:   'BEFORE {@substring of="The quick brown fox jumped." from="4" to="8"/} AFTER.'
+    context:  {}
+    expected: 'BEFORE quic AFTER.'
+  },
+  'can extract substrings from parameter (with from and to swapped)':{
+    source:   'BEFORE {@substring of="The quick brown fox jumped." from="8" to="4"/} AFTER.'
     context:  {}
     expected: 'BEFORE quic AFTER.'
   },
@@ -216,6 +241,17 @@ new DustTestSuite("@substring helper", {
     context:  {animal:"fox",adj:"quick brown"}
     expected: 'BEFORE The quick brown f AFTER.'
   }
+  'doesn\'t choke when no to or from param is provided':{
+    source:   'BEFORE {@substring of="The quick brown fox jumped."/} AFTER.'
+    context:  {}
+    expected: 'BEFORE The quick brown fox jumped. AFTER.'
+  }
+  'doesn\'t choke when to or from param is invalid':{
+    source:   'BEFORE {@substring of="The quick brown fox jumped." from="whatever" to=""/} AFTER.'
+    context:  {}
+    expected: 'BEFORE The quick brown fox jumped. AFTER.'
+  }
+
 }).run_tests_on dust
 
 new DustTestSuite("@trim helper", {
@@ -695,6 +731,16 @@ new DustTestSuite("@repeat helper",{
     context:  { list: ['one','two','three','four','five'] },
     expected: 'before|0:012;1:012;2:012;3:012|after'
   }
+  '@repeat - doesn\'t choke on null':{
+    source:   'before|{@repeat}X{/repeat}|after',
+    context:  { list: null },
+    expected: 'before||after'
+  }
+  '@repeat - doesn\'t choke on non-intetger':{
+    source:   'before|{@repeat times="gibberish"}X{/repeat}|after',
+    context:  { list: null },
+    expected: 'before||after'
+  }
 }).run_tests_on dust
 
 new DustTestSuite("@*case helpers",{
@@ -952,6 +998,17 @@ new DustTestSuite("@elements helper", {
       }
     },
     expected: "BEFORE|bar=|AFTER"
+  }
+  'doesn\'t choke when sorting null or undefined values':{
+    source: '{@elements of=foo sort=""}{$key}={$value}{@sep}{~n}{/sep}{/elements}',
+    context:  {
+      foo:{
+        a:undefined
+        c:"three"
+        b:null
+      }
+    },
+    expected: "a=\nb=\nc=three"
   }
 }).run_tests_on dust
 

@@ -77,8 +77,6 @@ class CommonDustjsHelpers
       chunk.write(value.length)
     else if typeof value is "object"
       chunk.write(Object.keys(value).length)
-    else if value?.length? or value?.size? or value?.count?
-      chunk.write(value?.length ? value?.size ? value?.count)
     return chunk
 
   deorphan_helper:(chunk,context,bodies,params)=>
