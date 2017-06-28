@@ -35,7 +35,9 @@ Note that `exportTo`, `exportHelpersTo` and `exportFiltersTo` are also available
 
 ## The Helpers
 
-## @count
+[@count](#count) | [@deorphan](#deorphan) | [@downcase](#downcase) | [@elements](#elements) | [@even](#even) | [@filter](#filter) | [@first](#first) | [@idx](#idx) | [@if](#if) | [@index](#index) | [@last](#last) | [@odd](#odd) | [@random](#random) | [@regexp](#regexp) | [@repeat](#repeat) | [@sep](#sep) | [@substring](#substring) | [@switch](#switch) | [@titlecase](#titlecase) | [@trim](#trim) | [@unless](#unless) | [@upcase](#upcase)
+
+### @count
 
 Emits the size (length) of an array, map or similar container.
 
@@ -82,7 +84,7 @@ Emits the size (length) of an array, map or similar container.
 >The map has 3 keys.
 >```
 
-## @deorphan
+### @deorphan
 
 Replaces whitespace between the last two "words" of the body with `&nbsp;`
 
@@ -104,7 +106,7 @@ _none_
 > The last word won't be left&nbsp;dangling.
 > ```
 
-## @downcase
+### @downcase
 
 Converts body text to lower case.
 
@@ -132,63 +134,7 @@ _none_
 > hello world.
 > ```
 
-## @upcase
-
-Converts body text to upper case.
-
-**Parameters:**
-
-_none_
-
-**Example:**
-
-> Context:
->
-> ```json
-> { "name":"World" }
-> ```
->
-> Template:
->
-> ```dustjs
-> {@upcase}Hello {name}.{/upcase}.
-> ```
->
-> Output:
->
-> ```
-> HELLO WORLD.
-> ```
-
-## @titlecase
-
-Converts body text to title-case, upcasing the first letter of every "word".
-
-**Parameters:**
-
-_none_
-
-**Example:**
-
-> Context:
->
-> ```json
-> { "book":"a christmas carol" }
-> ```
->
-> Template:
-> ```dustjs
-> Charles Dickens wrote "{@titlecase}{book}{/titlecase}".
-> ```
->
-> Output:
->
-> ```
-> Charles Dickens wrote "A Christmas Carol".
-> ```
-
-
-## @elements
+### @elements
 
 Iterates over the key-value pairs in a map, exposing `$key`, `$value` and `$idx` context variables inside the loop.
 
@@ -254,11 +200,12 @@ When the specified map is empty or undefined, the `{:else}` block (if any) will 
 > ```
 
 
-Note that sequence-based helper tags (`@even`, `@odd`, `@first`, `@last`, `@index`, `@idx`, `@sep`, etc.) work within the `@elements` helper in the same way that they do within the built-in `{#foo}{/foo}` array-iterating blocks.
+Note that sequence-based helper tags (`@even`, `@odd`, `@first`, `@last`, `@index`, `@idx`, `@sep`, etc.) work within the `@elements` helper in the same way that they do within the built-in `{#foo}{/foo}` array-iterating blocks.  The same statement should be true for any dust helper function that relies on the (standard) `stack.index` and `stack.of` properties of the dust context object.
 
-## @even
 
-Executes only for even-valued (zero-based) indexes.
+### @even
+
+Executes the body for even-indexed elements of a list, the `{:else}` block for others.
 
 **Parameters:**
 
@@ -289,42 +236,57 @@ _none_
 >  * E is even.
 > ```
 
-## @odd
 
-Executes only for odd-valued (zero-based) indexes.
+### `@filter`
+
+Dust.js includes several "filters" that convert the content of a context variable before emitting it.  For example, the snippet:
+
+```dustjs
+{foo|uc}
+```
+
+will escape the value of the context variable `foo` using JavaScript's `encodeURIComponent` function.
+
+The `@filter` helper makes it possible to apply a filter to arbitrary text (not just the value of a variable).
+
+For example, the snippet:
+
+    {@filter type="uc"}{foo}{/filter}
+
+is equivalent to `{foo|uc}`, and:
+
+    {@filter type="uc"}Some text before. {foo} Some text after.{/filter}
+
+will apply the filter to *all* of the text within the body of the `@filter` tag, not just the value of `foo`.
+
 
 **Parameters:**
 
-_none_
+ * `type` - the filter type (in the base dustjs implementation, this includes `h`, `s`, `js`, `u`, `uc`, but any registered filter value can be applied).
 
 **Example:**
 
 > Context:
 >
 > ```json
-> { "list":["A","B","C","D","E"] }
+> { "name":"<em>World</em>" }
 > ```
 >
 > Template:
 > ```dustjs
->  {#list}
->   * {@odd}{.} is odd.{:else}{.} is even.{/odd}
->  {/list}
+> {@filter type="h"}<blink>Hello {name}!</blink>{/filter}
 > ```
 >
 > Output:
 >
 > ```
->  * A is even.
->  * B is odd.
->  * C is even.
->  * D is odd.
->  * E is even.
+> &lt;blink&gt;Hello &lt;em&gt;World&lt;/em&gt;!&lt;/blink&gt;.
 > ```
 
-## @first
 
-Executes only for the first element in a list.
+### @first
+
+Executes the body for first element in a list or enumeration, the `{:else}` block for others.
 
 **Parameters:**
 
@@ -355,9 +317,15 @@ _none_
 >  * E is not first.
 > ```
 
-## @last
 
-Executes only for the last element in a list.
+### @idx
+
+This helper restores the functionality of the `{@idx}` helper in the original dust.js.  (This helper was subsequently removed in linkedin-dustjs.)
+
+Quoting [the original dust.js documentation](http://akdubya.github.io/dustjs/):
+
+> The idx tag passes the numerical index of the current element to the enclosed block.
+
 
 **Parameters:**
 
@@ -368,55 +336,31 @@ _none_
 > Context:
 >
 > ```json
-> { "list":["A","B","C","D","E"] }
+> { "names": [ "Moe", "Larry", "Curly" ] }
 > ```
 >
 > Template:
+>
 > ```dustjs
->  {#list}
->   * {@last}Finally, {.} is last.{:else}{.} is not last.{/last}
->  {/list}
+> {#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}
 > ```
 >
 > Output:
 >
 > ```
->  * A is not last.
->  * B is not last.
->  * C is not last.
->  * D is not last.
->  * Finally, E is last.
+> Moe0, Larry1, Curly2
 > ```
 
-# (more docs to reconcile)
+Note that this helper will *only* be added if an `@idx` helper does not already exist.  If `@idx` is found in Dust's list of helper functions it will be left alone.
 
- * **@switch** - case-statement like (e.g., `{@switch on=val}{:foo}It was foo.{:bar}It was bar.{:else}It was something else.{/switch}`)
+Also see the [`@sep`](#sep) and [`@index`](#index) helpers.
 
 
-## `@idx`
-
-This helper restores the functionality of the `{@idx}` helper in the original dust.js.  (This helper was subsequently removed in linkedin-dustjs..)
-
-Quoting [the original dust.js documentation](http://akdubya.github.io/dustjs/):
-
-> The idx tag passes the numerical index of the current element to the enclosed block.
-
-    {#names}{.}{@idx}{.}{/idx}{@sep}, {/sep}{/names}
-
-The template above might output something like:
-
-    Moe0, Larry1, Curly2
-
-Note that this helper will *only* be added if an `@idx` helper does not already exist.  If `@idx` is found Dust's list of helpers it will be left alone.
-
-Also see the `@sep` helper.
-
-## `@if`
+### @if
 
 This helper conditionally executes the tag body (or an `{:else}` block, if any) based on a several types of predicate.
 
-
-### `@if value=true/false`
+#### @if value=true/false
 
 When the `value` parameter is used by itself, the `@if` helper will execute the body if the specified value is (or evaluates to):
 
@@ -460,31 +404,32 @@ and `NO` for the following contexts:
   * `{foo:null}`
   * `{bar:"anything"}`
 
-### `@if value=foo is=bar`
+#### `@if value=foo is=bar`
 
 The `is` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `is` (a context variable or string, possibly including dust markup).  If the values are equal (`===`) the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
 
-### `@if value=foo isnt=bar`
+#### `@if value=foo isnt=bar`
 
 The `isnt` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `is` (a context variable or string, possibly including dust markup).  If the values are NOT equal (`!==`) the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
 
-### `@if value=foo isnt=bar`
+#### `@if value=foo isnt=bar`
 
 The `isnt` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `is` (a context variable or string, possibly including dust markup).  If the values are NOT equal (`!==`) the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
 
-### `@if value=foo above=bar`
+#### `@if value=foo above=bar`
 
 The `above` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `above` (a context variable or string, possibly including dust markup) using the `>` operator.  If `value > above` the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
 
-### `@if value=foo below=bar`
+#### `@if value=foo below=bar`
 
 The `below` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of `below` (a context variable or string, possibly including dust markup) using the `<` operator.  If `value < below` the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
 
-### `@if value=foo matches=bar`
+#### `@if value=foo matches=bar`
 
 The `matches` parameter will compare the value of `value` (a context variable or string, possibly including dust markup) to that of regular expression specified in `matches` (a context variable or string, possibly including dust markup).  If matched, the body will be evaluated, otherwise the `{:else}` block (if any) will be evaluated.
 
-## `@index`
+
+### @index
 
 When looping over an array, this helper emits the one-based index of the current element.
 
@@ -512,9 +457,78 @@ also yields:
 
 Note that `{@index}{/index}` yields nothing. Only the `{@index/}` syntax emits the index value without the `{.}` tag.
 
-## `@random`
 
-The "random" helper emits a random integer in the specified range.
+### @last
+
+Executes the body for last element in a list or enumeration, the `{:else}` block for others.
+
+**Parameters:**
+
+_none_
+
+**Example:**
+
+> Context:
+>
+> ```json
+> { "list":["A","B","C","D","E"] }
+> ```
+>
+> Template:
+> ```dustjs
+>  {#list}
+>   * {@last}Finally, {.} is last.{:else}{.} is not last.{/last}
+>  {/list}
+> ```
+>
+> Output:
+>
+> ```
+>  * A is not last.
+>  * B is not last.
+>  * C is not last.
+>  * D is not last.
+>  * Finally, E is last.
+> ```
+
+
+### @odd
+
+Executes the body for odd-indexed elements in a list or enumeration, the `{:else}` block for others.
+
+**Parameters:**
+
+_none_
+
+**Example:**
+
+> Context:
+>
+> ```json
+> { "list":["A","B","C","D","E"] }
+> ```
+>
+> Template:
+> ```dustjs
+>  {#list}
+>   * {@odd}{.} is odd.{:else}{.} is even.{/odd}
+>  {/list}
+> ```
+>
+> Output:
+>
+> ```
+>  * A is even.
+>  * B is odd.
+>  * C is even.
+>  * D is odd.
+>  * E is even.
+> ```
+
+
+#### @random
+
+The `@random` helper emits a random integer in the specified range.
 
 For example, the Dust.js code:
 
@@ -532,9 +546,9 @@ The `random` helper accepts three parameters:
  * `max` - the minimum value to generate (defaults to `1`)
  * `set` - when specified, the random value will be assigned to a context variable of the given name.
 
-## `@regexp`
+### @regexp
 
-The "regexp" helper can be used to extract the part of a string that matches a given regular expression.
+The `@regexp` helper can be used to extract the part of a string that matches a given regular expression.
 
 For example, given the context:
 
@@ -599,9 +613,9 @@ will evaluate to:
 
     Vowels: e, u, i, o, o, u, e
 
-## `@repeat`
+### @repeat
 
-The "repeat" helper will execute its body `times` times (as if a list of `times` bodies were passed to a section block).
+The `@repeat` helper will execute its body `times` times (as if a list of `times` bodies were passed to a section block).
 
 For example the Dust.js snippet:
 
@@ -628,7 +642,10 @@ will resolve to:
 
 Note that the `times` parameter can be a context variable or literal numeric string.
 
-## `@sep`
+Also note that sequence-based helper tags (`@even`, `@odd`, `@first`, `@last`, `@index`, `@idx`, `@sep`, etc.) work within the `@repeat` helper in the same way that they do within the built-in `{#foo}{/foo}` array-iterating blocks.  The same statement should be true for any dust helper function that relies on the (standard) `stack.index` and `stack.of` properties of the dust context object.
+
+
+### @sep
 
 This helper restores the functionality of the `{@sep}` helper in the original dust.js.  (This helper was subsequently removed in later linkedin-dustjs releases.)
 
@@ -646,7 +663,8 @@ Note that this helper will only be added if the `@sep` helper does not already e
 
 Also see the `@idx` helper.
 
-## `@substring`
+
+### @substring
 
 The "substring" helper extracts a substring from the specified parameter or the tag body.
 
@@ -676,7 +694,6 @@ The `substring` helper accepts the following parameters:
 
  * `to` - the (zero-based) index one larger than the last character of the string to include in the output.  (That is, the substring will be the range of characters at position `i` where `from <= i < to`.) This value must be an integer. When missing, defaults to the length of the string.  When negative, the characters are counted from the end of the string.  That is, a value of `to="-3"` is equivalent to `to="<string.length>-3"`.
 
-
 Note that `from` and `to` can contain Dust.js variables, which will be evaluated before the paremeter value is read.
 
 If `from` and `to` are out of sequence (that is, `from > to`), they will be automatically swapped.
@@ -704,30 +721,91 @@ yields:
     With negative "from" and "to": |the lazy|
     With "from" and "to": |The q|
 
-## `@filter`
-
-Dust.js includes several "filters" that convert the content of a context variable before emitting it.  For example, the snippet:
-
-    {foo|uc}
-
-will escape the value of the context variable `foo` using JavaScript's `encodeURIComponent` function.
-
-The "filter" helper makes it possible to apply a filter to arbitrary text (not just the value of a variable).
-
-For example, the snippet:
-
-    {@filter type="uc"}{foo}{/filter}
-
-is equivalent to `{foo|uc}`, and:
-
-    {@filter type="uc"}Some text before. {foo} Some text after.{/filter}
-
-will apply the filter to *all* of the text within the body of the `@filter` tag, not just the value of `foo`.
 
 
-## `@trim`
 
-The "trim" helper removes leading and trailing whitespace from its body. Any Dust.js tags within the body will be evaluated as they normally would.
+### @switch
+
+Implements a "switch" or "case" statement, executing one of several alternatives based some value.
+
+The value to switch on is specified in the parameter `on`, which can be a dust context variable, a literal string, or a literal string containing dust context variables.
+
+The body to execute is determined by comparing the value of `on` to the name of each block.  Empty strings, `null` and `undefined` values trigger the primary body block (the unlabeled one). Non-empty values trigger the block with the corresponding name (e.g. the `{:foo}` block will be evaluated when the value of `on` resolved to `foo`).  When no block matches the value of `on`, the `{:else}` block, if any, is executed.
+
+**Parameters:**
+
+ * `on` - the value to switch on.
+
+**Example:**
+
+> Context:
+>
+> ```json
+> { "val":"xyzzy" }
+> ```
+>
+> Template:
+> ```dustjs
+>  {@switch on=val}
+>   {:foo}The value was foo.
+>   {:bar}The value was bar.
+>   {:xyzzy}The value was xyzzy.
+>   {:else}The value was something else.
+>  {/switch}
+> ```
+>
+> Output:
+>
+> ```
+> The value was xyzzy.
+> ```
+
+**Hints:**
+
+Sometimes you need to work-around the limitations of the strings that dustjs will accept within the `{:block}` tag by modifying the value you are swithcing on.
+
+For example, dustjs will not allow a numeric block label such as `{:3}`, so you must add a prefix to both the value and block labels:
+
+```dustjs
+{@switch on="num{val}"}
+{:num1}The number was one.
+{:num2}The number was two.
+{:num3}The number was three.
+{/switch}
+```
+
+### @titlecase
+
+Converts the tag body text to title-case, upcasing the first letter of every "word".
+
+**Parameters:**
+
+_none_
+
+**Example:**
+
+> Context:
+>
+> ```json
+> { "book":"a christmas carol" }
+> ```
+>
+> Template:
+> ```dustjs
+> Charles Dickens wrote "{@titlecase}{book}{/titlecase}".
+> ```
+>
+> Output:
+>
+> ```
+> Charles Dickens wrote "A Christmas Carol".
+> ```
+
+
+
+### @trim
+
+The `@trim` helper removes leading and trailing whitespace from its body. Any Dust.js tags within the body will be evaluated as they normally would.
 
 For example, given the context:
 
@@ -742,13 +820,42 @@ will resolve to:
     This is an example.
 
 
-## `@unless`
 
-The `@unless` helper is identical to the `@if` helper with the logic cases reversed.  That is, @unless will execute the `{:else}` block (if any) when the condition evaluates to `true` and the body block otherwise.
+### @unless
 
-See the `@if` helper for more details.
+The `@unless` helper is identical to the `@if` helper with the logic cases reversed.  That is, `@unless` will execute the `{:else}` block (if any) when the condition evaluates to `true` and the body block otherwise.
 
-See [helpers.md](https://github.com/rodw/common-dustjs-helpers/blob/master/docs/helpers.md) for detailed documentation.
+See the [`@if`](#if) helper for more details.
+
+
+### @upcase
+
+Converts body text to upper case.
+
+**Parameters:**
+
+_none_
+
+**Example:**
+
+> Context:
+>
+> ```json
+> { "name":"World" }
+> ```
+>
+> Template:
+>
+> ```dustjs
+> {@upcase}Hello {name}.{/upcase}.
+> ```
+>
+> Output:
+>
+> ```
+> HELLO WORLD.
+> ```
+
 
 ## The Filters
 
