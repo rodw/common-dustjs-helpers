@@ -172,15 +172,15 @@ When the specified map is empty or undefined, the `{:else}` block (if any) will 
 > ```dustjs
 > Unsorted:
 >
-> {@elements of=themap}{$idx}.{$key}={$value}; {/@elements}
+> {@elements of=themap}{$idx}.{$key}={$value}; {/elements}
 >
 > By key:
 >
-> {@elements of=themap sort="true"}{$idx}.{$key}={$value}; {/@elements}
+> {@elements of=themap sort="true"}{$idx}.{$key}={$value}; {/elements}
 >
 > By value:
 >
-> {@elements of=themap sort=""}{$idx}.{$key}={$value}; {/@elements}
+> {@elements of=themap sort=""}{$idx}.{$key}={$value}; {/elements}
 > ```
 >
 > Output:
